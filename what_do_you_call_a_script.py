@@ -2,12 +2,21 @@ import gensim
 import nltk
 import numpy as np
 
+########################
+### GLOBAL CONSTANTS ###
+########################
+
+# ARPABET vocabulary from here: https://en.wikipedia.org/wiki/ARPABET
+
+ARPABET_VOWELS = set(['AA', 'AE', 'AH', 'AO', 'AW', 'AX', 'AXR', 'AY', 'EH', 'ER', 'EY', 'IH', 'IX', 'IY', 'OW', 'OY', 'UH', 'UW', 'UX'])
+
+ARPABET_CONSONANTS = set(['B', 'CH', 'D', 'DH', 'DX', 'EL', 'EM', 'EN', 'F', 'G', 'H', 'HH', 'JH', 'K', 'L', 'M', 'N', 'NG', 'NX', 'P', 'Q', 'R', 'S', 'SH', 'T', 'TH', 'V', 'W', 'WH', 'Y', 'Z', 'ZH'])
 
 #############################
 ### DEFINE HELPER CLASSES ###
 #############################
 
-class Word:
+class Word(object):
     '''
     A word is a grapheme-phoneme pair
       grapheme - str
@@ -16,8 +25,8 @@ class Word:
       phonemes are assumed to be stress-less
     '''
     def __init__(self, grapheme, phoneme, clean_grapheme=False, clean_phoneme=True):
-        self.grapheme = self.get_clean_grapheme(grapheme) if clean_grapheme else grapheme
-        self.phoneme = self.get_clean_phoneme(phoneme) if clean_phoneme else phoneme
+        self.grapheme = Word.get_clean_grapheme(grapheme) if clean_grapheme else grapheme
+        self.phoneme = Word.get_clean_phoneme(phoneme) if clean_phoneme else phoneme
 
     def get_neighbor_words(self, include_self=True, max_neighbors=300):
         '''
@@ -28,6 +37,10 @@ class Word:
         Do NOT mess aroung with multiple pronounciations (can change this later)
 
         TODO: update this to use WordNet distance, or something else more intelligent
+
+        TODO: Find 50 nearest neighbors, then 50 nearest neighbors of neighbors
+        This will yield more closely semantially-related words because Word2Vec is only meaningful over very short distances
+
         '''
         neighbor_graphemes = list(zip(*word2vec_model.most_similar(positive=[self.grapheme], topn=max_neighbors))[0])
 
@@ -42,21 +55,22 @@ class Word:
 
         return neighbor_words
 
-    def get_clean_grapheme(self, grapheme):
+    @staticmethod
+    def get_clean_grapheme(grapheme):
         '''
         Convert grapheme to string, and make lower-case
         '''
         return str(grapheme).lower()
 
-
-    def get_clean_phoneme(self, phoneme):
+    @staticmethod
+    def get_clean_phoneme(phoneme):
         '''
         Remove non-alpha characters denoting stress and other non-phonetic information
         '''
         return [filter(str.isalpha, str(phone)) for phone in phoneme]
 
 
-class Portmanteau:
+class Portmanteau(object):
     '''
     A portmanteau is a combination of two words which is both graphemically and phonetically acceptable
 
@@ -87,7 +101,7 @@ class Portmanteau:
             return
 
         max_overlap = min(len(self.word1.phoneme), len(self.word2.phoneme)) - min_nonoverlap
-        
+
         for word_order in ('forward','backward'):
             # If the word order is 'backward', then flip the variable names
             if word_order == 'backward':
@@ -96,11 +110,14 @@ class Portmanteau:
             # Keep as much of each word preserved as possible, i.e. return as soon as an acceptable overlap is found
             for overlap in range(min_overlap, max_overlap + 1):
                 if self.word1.phoneme[len(self.word1.phoneme) - overlap:] == self.word2.phoneme[:overlap]:
-                    self.has_portmanteau = True
-                    portmanteau_phoneme = self.word1.phoneme + self.word2.phoneme[overlap:]
-                    portmanteau_grapheme = self.get_portmanteau_grapheme(overlap)
-                    self.portmanteau_word = Word(portmanteau_grapheme, portmanteau_phoneme)
-                    return
+                    # At least one of the overlapping phones must be a vowel
+                    overlap_phoneme = Word.get_clean_phoneme(self.word2.phoneme[:overlap])
+                    if len(set(overlap_phoneme) & ARPABET_VOWELS) >= 1:
+                        self.has_portmanteau = True
+                        portmanteau_phoneme = self.word1.phoneme + self.word2.phoneme[overlap:]
+                        portmanteau_grapheme = self.get_portmanteau_grapheme(overlap)
+                        self.portmanteau_word = Word(portmanteau_grapheme, portmanteau_phoneme)
+                        return
 
         self.has_portmanteau = False
 
@@ -183,7 +200,7 @@ def get_valid_portmanteaus(words1_neighbors, words2_neighbors):
 
 if __name__ == '__main__':
 
-    # # Load Google's pre-trained Word2Vec model
+    # Load Google's pre-trained Word2Vec model
     word2vec_model = gensim.models.KeyedVectors.load_word2vec_format('./data/GoogleNews-vectors-negative300.bin.gz', binary=True)  
 
     # Load CMUdict phonetic dictionary
