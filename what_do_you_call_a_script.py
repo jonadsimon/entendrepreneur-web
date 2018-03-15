@@ -28,7 +28,7 @@ class Word(object):
         self.grapheme = Word.get_clean_grapheme(grapheme) if clean_grapheme else grapheme
         self.phoneme = Word.get_clean_phoneme(phoneme) if clean_phoneme else phoneme
 
-    def get_neighbor_words(self, include_self=True, max_neighbors=300):
+    def get_neighbor_words(self, include_self=True):
         '''
         Find neighbors using naive Word2Vec nearest-neighbors
 
@@ -42,7 +42,7 @@ class Word(object):
         This will yield more closely semantially-related words because Word2Vec is only meaningful over very short distances
 
         '''
-        neighbor_graphemes = list(zip(*word2vec_model.most_similar(positive=[self.grapheme], topn=max_neighbors))[0])
+        neighbor_graphemes = self.get_semantic_neighbor_graphemes(is_recursive=False)
 
         neighbor_words = []
         for grapheme in neighbor_graphemes:
@@ -54,6 +54,32 @@ class Word(object):
             neighbor_words.append(self)
 
         return neighbor_words
+
+    def get_semantic_neighbor_graphemes(self, is_recursive=False, max_neighbors=300, max_recursive_neighbors=50):
+        '''
+        Find semantic neighbor graphemes using word2vec
+
+        is_recursive = False : find the max_neighbors nearest neighbors to self.grapheme
+        is_recursive = True  : find the max_recursive_neighbors nearest neighbors to self.grapheme, and then find the max_recursive_neighbors to *those*, removing duplicates
+        '''
+        if is_recursive:
+            return Word.get_word2vec_neighbors(self.grapheme, max_neighbors)
+        else:
+            neighbor_graphemes = Word.get_word2vec_neighbors(self.grapheme, max_recursive_neighbors)
+            for neighbor_grapheme in neighbor_graphemes[:]:
+                neighbor_graphemes += Word.get_word2vec_neighbors(neighbor_grapheme, max_recursive_neighbors)
+            # Remove duplicates, and remove original grapheme if present
+            neighbor_graphemes = list(set(neighbor_graphemes))
+            if self.grapheme in neighbor_graphemes:
+                neighbor_graphemes.remove(self.grapheme)
+            return neighbor_graphemes
+
+    @staticmethod
+    def get_word2vec_neighbors(grapheme, num_neighbors):
+        '''
+        Get the num_neighbors nearest neighbors to 'grapheme', as given by the global word2vec_model
+        '''
+        return list(zip(*word2vec_model.most_similar(positive=[grapheme], topn=num_neighbors))[0])
 
     @staticmethod
     def get_clean_grapheme(grapheme):
@@ -81,7 +107,7 @@ class Portmanteau(object):
     '''
 
     # min_length = 3      # minimum number of phones each phonemes must have
-    # min_overlap = 2     # minimum number of phones which must overlap between the phonemes
+    # min_overlap = 3     # minimum number of phones which must overlap between the phonemes
     # min_nonoverlap = 1  # minimum number of phones which must NOT overlap for each of the phonemes
 
     def __init__(self, word1, word2):
@@ -90,7 +116,7 @@ class Portmanteau(object):
         self.has_portmanteau = None
         self.portmanteau_word = None
 
-    def generate_portmanteau_word(self, min_length=3, min_overlap=2, min_nonoverlap=1):
+    def generate_portmanteau_word(self, min_length=3, min_overlap=3, min_nonoverlap=1):
         '''
         Generate a portmanteau of the member words (if possible)
         '''
