@@ -6,11 +6,91 @@ import numpy as np
 ### GLOBAL CONSTANTS ###
 ########################
 
-# ARPABET vocabulary from here: https://en.wikipedia.org/wiki/ARPABET
-
 ARPABET_VOWELS = set(['AA', 'AE', 'AH', 'AO', 'AW', 'AX', 'AXR', 'AY', 'EH', 'ER', 'EY', 'IH', 'IX', 'IY', 'OW', 'OY', 'UH', 'UW', 'UX'])
-
 ARPABET_CONSONANTS = set(['B', 'CH', 'D', 'DH', 'DX', 'EL', 'EM', 'EN', 'F', 'G', 'H', 'HH', 'JH', 'K', 'L', 'M', 'N', 'NG', 'NX', 'P', 'Q', 'R', 'S', 'SH', 'T', 'TH', 'V', 'W', 'WH', 'Y', 'Z', 'ZH'])
+
+ARPABET_DIPHTHONGS = set(['AW', 'AY', 'EY', 'OW', 'OY'])
+ARPABET_RHOTICS = set(['ER'])
+
+ARPABET_PHONE_TO_PHONOLOGICAL_PHONE_DICT = {
+    'AA': ['AA']
+    'AE': ['AE']
+    'AH': ['AH']
+    'AO': ['AO']
+    'AW': ['AA', 'UH'], # diphthong
+    'AY': ['AA', 'IH'], # diphthong
+    'B': ['B'],
+    'CH': ['CH'],
+    'D': ['D'],
+    'DH': ['DH'],
+    'EH': ['EH'],
+    'ER': ['AO', 'R'], # rhotic; 'EH' instead of 'AO'?
+    'EY': ['e', 'IH'], # diphthong
+    'F': ['F'],
+    'G': ['G'],
+    'HH': ['HH'],
+    'IH': ['IH'],
+    'IY': ['IY'],
+    'JH': ['JH'],
+    'K': ['K'],
+    'L': ['L'],
+    'M': ['M'],
+    'N': ['N'],
+    'NG': ['NG'],
+    'OW': ['o', 'UH'], # diphthong
+    'OY': ['AO', 'IH'], # diphthong
+    'P': ['P'],
+    'R': ['R'],
+    'S': ['S'],
+    'SH': ['SH'],
+    'T': ['T'],
+    'TH': ['TH'],
+    'UH': ['UH'],
+    'UW': ['UW'],
+    'V': ['V'],
+    'W': ['W'],
+    'Y': ['Y'],
+    'Z': ['Z'],
+    'ZH': ['ZH'],
+}
+
+PHONOLOGICAL_PHONE_TO_PHONOLOGICAL_FEATURE_DICT = {
+    'AA': [-1,1,1,1,-1,-1,0,0,1,-1,1,-1,-1,1,-1,1,-1,-1,1,-1,-1,-1,-1], # variant
+    'AE': [-1,1,1,1,-1,-1,0,0,1,-1,1,-1,1,1,-1,1,-1,-1,1,-1,-1,-1,-1],
+    'AH': [-1,1,1,1,1,-1,0,0,1,1,-1,1,-1,1,-1,1,-1,-1,1,-1,-1,-1,-1], # treat as UH rather than AO
+    'AO': [-1,1,1,1,1,-1,0,0,1,-1,-1,1,-1,1,-1,1,-1,-1,1,-1,-1,-1,-1],
+    'B': [1,-1,-1,1,-1,-1,0,0,-1,0,0,0,0,-1,0,1,-1,-1,-1,-1,-1,-1,-1],
+    'CH': [1,-1,-1,-1,0,1,-1,1,1,1,-1,-1,-1,-1,0,-1,-1,-1,0,1,-1,1,-1],
+    'D': [1,-1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,1,-1,-1,-1,-1,-1,-1,-1],
+    'DH': [1,-1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,1,-1,-1,1,-1,-1,-1,-1],
+    'EH': [-1,1,1,1,-1,-1,0,0,1,-1,-1,-1,-1,1,-1,1,-1,-1,1,-1,-1,-1,-1],
+    'e': [-1,1,1,1,-1,-1,0,0,1,-1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,-1,-1],
+    'F': [1,-1,-1,1,-1,-1,0,0,-1,0,0,0,0,-1,0,-1,-1,-1,1,1,-1,-1,-1],
+    'G': [1,-1,-1,-1,0,-1,0,0,1,1,-1,1,-1,-1,0,1,-1,-1,-1,-1,-1,-1,-1],
+    'HH': [-1,-1,-1,-1,0,-1,0,0,-1,0,0,0,0,-1,0,-1,1,-1,1,-1,-1,-1,-1],
+    'IH': [-1,1,1,1,-1,-1,0,0,1,1,-1,-1,-1,1,-1,1,-1,-1,1,-1,-1,-1,-1],
+    'IY': [-1,1,1,1,-1,-1,0,0,1,1,-1,-1,1,1,1,1,-1,-1,1,-1,-1,-1,-1],
+    'JH': [1,-1,-1,-1,0,1,-1,1,1,1,-1,-1,-1,-1,0,1,-1,-1,0,1,-1,1,-1],
+    'K': [1,-1,-1,-1,0,-1,0,0,1,1,-1,1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1],
+    'L': [1,1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,1,-1,-1,1,-1,1,-1,-1],
+    'M': [1,1,-1,1,-1,-1,0,0,-1,0,0,0,0,-1,0,1,-1,-1,-1,-1,-1,-1,1],
+    'N': [1,1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,1,-1,-1,-1,-1,-1,-1,1],
+    'NG': [1,1,-1,-1,0,-1,0,0,1,1,-1,1,-1,-1,0,1,-1,-1,-1,-1,-1,-1,1],
+    'o': [-1,1,1,1,1,-1,0,0,1,-1,-1,1,1,1,1,1,-1,-1,1,-1,-1,-1,-1],
+    'P': [1,-1,-1,1,-1,-1,0,0,-1,0,0,0,0,-1,0,-1,-1,-1,-1,-1,-1,-1,-1],
+    'R': [1,1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,1,-1,-1,1,-1,-1,-1,-1],
+    'S': [1,-1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,-1,-1,-1,1,1,-1,-1,-1],
+    'SH': [1,-1,-1,-1,0,1,-1,1,-1,0,0,0,0,-1,0,-1,-1,-1,1,-1,-1,-1,-1],
+    'T': [1,-1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,-1,-1,-1,-1,-1,-1,-1,-1],
+    'TH': [1,-1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,-1,-1,-1,1,-1,-1,-1,-1],
+    'UH': [-1,1,1,1,1,-1,0,0,1,1,-1,1,-1,1,-1,1,-1,-1,1,-1,-1,-1,-1],
+    'UW': [-1,1,1,1,1,-1,0,0,1,1,-1,1,1,1,1,1,-1,-1,1,-1,-1,-1,-1],
+    'V': [1,-1,-1,1,-1,-1,0,0,-1,0,0,0,0,-1,0,1,-1,-1,1,1,-1,-1,-1],
+    'W': [-1,1,-1,1,1,-1,0,0,1,1,-1,1,-1,-1,0,1,-1,-1,1,-1,-1,-1,-1],
+    'Y': [-1,1,-1,1,-1,-1,0,0,1,1,-1,-1,-1,-1,0,1,-1,-1,1,-1,-1,-1,-1],
+    'Z': [1,-1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,1,-1,-1,1,1,-1,-1,-1],
+    'ZH': [1,-1,-1,-1,0,1,-1,1,-1,0,0,0,0,-1,0,1,-1,-1,1,-1,-1,-1,-1],
+}
 
 #############################
 ### DEFINE HELPER CLASSES ###
@@ -21,12 +101,14 @@ class Word(object):
     A word is a grapheme-phoneme pair
       grapheme - str
       phoneme  - list(str)
-
+      phonetic_features - numpy_array(int) [n_subphones x n_features]
       phonemes are assumed to be stress-less
     '''
     def __init__(self, grapheme, phoneme, clean_grapheme=False, clean_phoneme=True):
         self.grapheme = Word.get_clean_grapheme(grapheme) if clean_grapheme else grapheme
         self.phoneme = Word.get_clean_phoneme(phoneme) if clean_phoneme else phoneme
+        self.phonological_phoneme = Word.get_phonological_phoneme(phoneme)
+        self.phonological_features = Word.get_phonological_features(phoneme)
 
     def get_neighbor_words(self, include_self=True):
         '''
@@ -94,6 +176,118 @@ class Word(object):
         Remove non-alpha characters denoting stress and other non-phonetic information
         '''
         return [filter(str.isalpha, str(phone)) for phone in phoneme]
+
+    @staticmethod
+    def get_phonological_phoneme(phoneme):
+        '''
+        Convert ARPABET-type phoneme to phonological-type phoneme
+
+        A phonological-type phoneme is a phoneme which breaks apart diphthongs and rhotics into sub-phones
+        This representation can then be directly mapped onto phonological feature vectors
+        '''
+        arpabet_phoneme = get_clean_phoneme(phoneme)
+        phonological_phone_list = [ARPABET_PHONE_TO_PHONOLOGICAL_PHONE_DICT[phone] for phone in arpabet_phoneme]
+        return reduce(lambda x,y: x+y, phonological_phone_list)
+
+    @staticmethod
+    def get_phonological_features(phoneme):
+        '''
+        Convert phoneme to phonological [n_phones x n_features] feature array
+        '''
+        phonological_phoneme = get_phonological_phoneme(phoneme)
+        feature_list = [PHONOLOGICAL_PHONE_TO_PHONOLOGICAL_FEATURE_DICT[phone] for phone in phonological_phoneme]
+        return np.array(feature_list)
+
+
+class Pun(object):
+    '''
+    A pun is a combination of two words which is phonetically acceptable
+
+    A pun carries with it information about its quality to allow for later filtering
+    '''
+
+    # def __init__(self, word1, word2, is_pun=None, is_portmanteau=None, is_rhyme=None, is_pun=None, pun_string=None, 
+    def __init__(self, word1, word2, is_portmanteau=None, is_rhyme=None, is_pun=None, pun_string=None, 
+                 phoneme_distance=None, normed_phoneme_distance=None, overlap_size=None, normed_overlap_size=None):
+        self.word1 = word1
+        self.word2 = word2
+        
+        # self.is_pun = is_pun
+        self.is_portmanteau = is_portmanteau
+        self.is_rhyme = is_rhyme
+
+        self.pun_string = pun_string
+
+        self.phoneme_distance = phoneme_distance
+        self.normed_phoneme_distance = normed_phoneme_distance
+        self.overlap_size = overlap_size
+        self.normed_overlap_size = normed_overlap_size
+
+    def generate_pun_string(self, min_length=3, min_overlap=3, max_normed_distance=0.4, min_normed_overlap=0.4):
+        '''
+        Find max-length phonetic overlap which satisfles the allotted constraints
+
+        min_length : minimum number of phones each phonemes must have
+        min_overlap : minimum number of phones which must overlap between the phonemes
+        min_normed_distance : min(|overlapping_phones| / |total_phones|)
+        min_normed_overlap : min(|phonetic_distance| / |total_phones|)
+        '''
+
+        # Only attempt to generate a pun if each word is long enough
+        if len(self.word1.phoneme) < min_length or len(self.word2.phoneme) < min_length:
+            # self.is_pun = False
+            self.is_portmanteau = False
+            self.is_rhyme = False
+            return
+
+        # For each allowable window size, consider all combinations of subphones
+        min_phonological_features = min([len(self.word1.phonological_features), len(self.word2.phonological_features)])
+        max_phonological_features = min([len(self.word1.phonological_features), len(self.word2.phonological_features)])
+        pun_list = []
+        for overlap in range(min_overlap, min_phonological_features + 1):
+            for i1 in range(len(self.word1.phonological_features) - overlap + 1):
+                for i2 in range(len(self.word2.phonological_features) - overlap + 1):
+                    phoneme_distance = Pun.phonological_distance(self.word1.phonological_features[i:j], self.word2.phonological_features[k:l])
+                    normed_phoneme_distance = 1.0 * phoneme_distance / max_phonological_features
+                    normed_overlap_size = 1.0 * overlap / max_phonological_features
+                    # TODO : verify off-by-one logic
+                    if len(self.word1.phonological_features) - overlap == i1 and i2 == 0:
+                        is_portmanteau = True
+                    else 
+                        is_portmanteau = False
+
+                    if len(self.word1.phonological_features) - overlap == i1 and len(self.word2.phonological_features) - overlap == i2:
+                        is_rhyme = True
+                    else 
+                        is_rhyme = False
+
+                        Pun(None, None, )
+
+
+        # Keep as much of each word preserved as possible, i.e. return as soon as an acceptable overlap is found
+        for overlap in range(min_overlap, max_overlap + 1):
+            if self.word1.phoneme[len(self.word1.phoneme) - overlap:] == self.word2.phoneme[:overlap]:
+                # At least one of the overlapping phones must be a vowel
+                overlap_phoneme = Word.get_clean_phoneme(self.word2.phoneme[:overlap])
+                if len(set(overlap_phoneme) & ARPABET_VOWELS) >= 1:
+                    self.has_portmanteau = True
+                    portmanteau_phoneme = self.word1.phoneme + self.word2.phoneme[overlap:]
+                    portmanteau_grapheme = self.get_portmanteau_grapheme(overlap)
+                    self.portmanteau_word = Word(portmanteau_grapheme, portmanteau_phoneme)
+                    return
+
+        self.has_portmanteau = False
+        
+
+    @staticmethod
+    def phonological_distance(feature_array1, feature_array2):
+        '''
+        Phoneme distance is the sum of the constituent phone distances
+        '''
+        if len(phoneme1) == len(phoneme2):
+            return abs(feature_array1 - feature_array2).sum()
+        else:
+            raise Exception('Feature arrays must be the same length: {} != {}'.format(len(phoneme1), len(phoneme2)))
 
 
 class Portmanteau(object):
