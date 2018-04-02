@@ -1,3 +1,4 @@
+import sys
 import gensim
 import nltk
 import numpy as np
@@ -201,166 +202,76 @@ class Word(object):
 
 class Pun(object):
     '''
-    A pun is a combination of two words which is phonetically acceptable
-
     A pun carries with it information about its quality to allow for later filtering
+
+    MIN_LENGTH : minimum number of phones each phonemes must have
+    MIN_OVERLAP : minimum number of phones which must overlap between the phonemes
+    MAX_NORMED_DISTANCE : min(|overlapping_phones| / |total_phones|)
+    MIN_NORMED_OVERLAP : min(|phonetic_distance| / |total_phones|)
     '''
 
-    # def __init__(self, word1, word2, is_pun=None, is_portmanteau=None, is_rhyme=None, is_pun=None, pun_string=None, 
-    def __init__(self, word1, word2, is_portmanteau=None, is_rhyme=None, is_pun=None, pun_string=None, 
-                 phoneme_distance=None, normed_phoneme_distance=None, overlap_size=None, normed_overlap_size=None):
+    MIN_LENGTH = 3
+    MIN_OVERLAP = 3
+    MAX_NORMED_DISTANCE = 0.4
+    MIN_NORMED_OVERLAP = 0.4
+
+    def __init__(self, word1, word2, phoneme_distance=None, normed_phoneme_distance=None, overlap_size=None, normed_overlap_size=None):
         self.word1 = word1
         self.word2 = word2
-        
-        # self.is_pun = is_pun
-        self.is_portmanteau = is_portmanteau
-        self.is_rhyme = is_rhyme
-
-        self.pun_string = pun_string
-
         self.phoneme_distance = phoneme_distance
         self.normed_phoneme_distance = normed_phoneme_distance
         self.overlap_size = overlap_size
         self.normed_overlap_size = normed_overlap_size
 
-    def generate_pun_string(self, min_length=3, min_overlap=3, max_normed_distance=0.4, min_normed_overlap=0.4):
+    def generate_pun(self):
         '''
-        Find max-length phonetic overlap which satisfles the allotted constraints
-
-        min_length : minimum number of phones each phonemes must have
-        min_overlap : minimum number of phones which must overlap between the phonemes
-        min_normed_distance : min(|overlapping_phones| / |total_phones|)
-        min_normed_overlap : min(|phonetic_distance| / |total_phones|)
+        Find best-quality phonetic overlap (according to class quality ordering) which satisfles the allotted constraints
         '''
 
         # Only attempt to generate a pun if each word is long enough
-        if len(self.word1.phoneme) < min_length or len(self.word2.phoneme) < min_length:
-            # self.is_pun = False
-            self.is_portmanteau = False
-            self.is_rhyme = False
+        if len(self.word1.phoneme) < MIN_LENGTH or len(self.word2.phoneme) < MIN_LENGTH:
+            self.is_pun = False
             return
 
         # For each allowable window size, consider all combinations of subphones
         min_phonological_features = min([len(self.word1.phonological_features), len(self.word2.phonological_features)])
         max_phonological_features = min([len(self.word1.phonological_features), len(self.word2.phonological_features)])
-        pun_list = []
-        for overlap in range(min_overlap, min_phonological_features + 1):
+        for overlap in range(MIN_OVERLAP, min_phonological_features + 1):
             for i1 in range(len(self.word1.phonological_features) - overlap + 1):
                 for i2 in range(len(self.word2.phonological_features) - overlap + 1):
                     phoneme_distance = Pun.phonological_distance(self.word1.phonological_features[i:j], self.word2.phonological_features[k:l])
                     normed_phoneme_distance = 1.0 * phoneme_distance / max_phonological_features
                     normed_overlap_size = 1.0 * overlap / max_phonological_features
-                    # TODO : verify off-by-one logic
-                    if len(self.word1.phonological_features) - overlap == i1 and i2 == 0:
-                        is_portmanteau = True
-                    else 
-                        is_portmanteau = False
+                    this_pun = Pun(self.word1, self.word2, phoneme_distance=phoneme_distance, normed_phoneme_distance=normed_phoneme_distance, overlap_size=overlap, normed_overlap_size=normed_overlap_size)      
+                    # TODO: initialize with first quality specs
+                    if self.phoneme_distance is None or this_pun > self: # no distances yet computed
+                        self.phoneme_distance = phoneme_distance
+                        self.normed_phoneme_distance = normed_phoneme_distance
+                        self.overlap_size = overlap
+                        self.normed_overlap_size = normed_overlap_size
 
-                    if len(self.word1.phonological_features) - overlap == i1 and len(self.word2.phonological_features) - overlap == i2:
-                        is_rhyme = True
-                    else 
-                        is_rhyme = False
-
-                        Pun(None, None, )
-
-
-        # Keep as much of each word preserved as possible, i.e. return as soon as an acceptable overlap is found
-        for overlap in range(min_overlap, max_overlap + 1):
-            if self.word1.phoneme[len(self.word1.phoneme) - overlap:] == self.word2.phoneme[:overlap]:
-                # At least one of the overlapping phones must be a vowel
-                overlap_phoneme = Word.get_clean_phoneme(self.word2.phoneme[:overlap])
-                if len(set(overlap_phoneme) & ARPABET_VOWELS) >= 1:
-                    self.has_portmanteau = True
-                    portmanteau_phoneme = self.word1.phoneme + self.word2.phoneme[overlap:]
-                    portmanteau_grapheme = self.get_portmanteau_grapheme(overlap)
-                    self.portmanteau_word = Word(portmanteau_grapheme, portmanteau_phoneme)
-                    return
-
-        self.has_portmanteau = False
-        
-
-    @staticmethod
-    def phonological_distance(feature_array1, feature_array2):
-        '''
-        Phoneme distance is the sum of the constituent phone distances
-        '''
-        if len(phoneme1) == len(phoneme2):
-            return abs(feature_array1 - feature_array2).sum()
+    def is_valid_pun(self):
+        if min(len(self.word1.phoneme), len(self.word1.phoneme)) >= MIN_LENGTH and self.overlap_size >= MIN_OVERLAP and self.normed_phoneme_distance <= MAX_NORMED_DISTANCE and self.normed_overlap_size >= MIN_NORMED_OVERLAP:
+            return True
         else:
-            raise Exception('Feature arrays must be the same length: {} != {}'.format(len(phoneme1), len(phoneme2)))
+            return False
 
+    def pun_quality_tuple(self):
+        # high, low, high, low
+        return (self.normed_overlap_size, -self.normed_phoneme_distance, self.overlap_size, -self.phoneme_distance)
 
-class Portmanteau(object):
-    '''
-    A portmanteau is a combination of two words which is both graphemically and phonetically acceptable
+    def __gt__(self, another_pun):
+        return self.pun_quality_tuple() > another_pun.pun_quality_tuple()
+ 
+    def __lt__(self, another_pun):
+        return self.pun_quality_tuple() < another_pun.pun_quality_tuple()
 
-    For a given pair of words, zero, one, or many acceptible portmanteaus can be possible
+    def __eq__(self, another_pun):
+        return self.pun_quality_tuple() == another_pun.pun_quality_tuple()
 
-    If multiple acceptable portmanteaus are found, pick the first one that's found
-    By default this will favor shorter overlaps over longer ones, and favor the order word1-word2 over word2-word1
-    '''
-
-    # min_length = 3      # minimum number of phones each phonemes must have
-    # min_overlap = 3     # minimum number of phones which must overlap between the phonemes
-    # min_nonoverlap = 1  # minimum number of phones which must NOT overlap for each of the phonemes
-
-    def __init__(self, word1, word2):
-        self.word1 = word1
-        self.word2 = word2
-        self.has_portmanteau = None
-        self.portmanteau_word = None
-
-    def generate_portmanteau_word(self, min_length=3, min_overlap=3, min_nonoverlap=1):
-        '''
-        Generate a portmanteau of the member words (if possible)
-        '''
-
-        # Only attempt to generate a portmanteau if each phoneme is long enough
-        if len(self.word1.phoneme) < min_length or len(self.word2.phoneme) < min_length:
-            self.has_portmanteau = False
-            return
-
-        max_overlap = min(len(self.word1.phoneme), len(self.word2.phoneme)) - min_nonoverlap
-
-        for word_order in ('forward','backward'):
-            # If the word order is 'backward', then flip the variable names
-            if word_order == 'backward':
-                self.word1, self.word2 = self.word2, self.word1
-
-            # Keep as much of each word preserved as possible, i.e. return as soon as an acceptable overlap is found
-            for overlap in range(min_overlap, max_overlap + 1):
-                if self.word1.phoneme[len(self.word1.phoneme) - overlap:] == self.word2.phoneme[:overlap]:
-                    # At least one of the overlapping phones must be a vowel
-                    overlap_phoneme = Word.get_clean_phoneme(self.word2.phoneme[:overlap])
-                    if len(set(overlap_phoneme) & ARPABET_VOWELS) >= 1:
-                        self.has_portmanteau = True
-                        portmanteau_phoneme = self.word1.phoneme + self.word2.phoneme[overlap:]
-                        portmanteau_grapheme = self.get_portmanteau_grapheme(overlap)
-                        self.portmanteau_word = Word(portmanteau_grapheme, portmanteau_phoneme)
-                        return
-
-        self.has_portmanteau = False
-
-    def get_portmanteau_grapheme(self, overlap):
-        '''
-        TODO: Implement this function with the help of a premade phoneme/grapheme alignment algorithm
-
-        # Use one of these two packages for phoneme/grapheme alignment:
-        # 1) https://github.com/AdolfVonKleist/Phonetisaurus
-        # 2) https://github.com/letter-to-phoneme/m2m-aligner
-
-        For now use the trival hyphenated grapheme combination
-        '''
-        return self.word1.grapheme + '-' + self.word2.grapheme
-
-    def print_portmanteau(self):
-        '''
-        Print the resulting portmaneau
-        '''
-        if self.has_portmanteau:
-            print '{}  ({} + {})'.format(self.portmanteau_word.grapheme, self.word1.grapheme, self.word2.grapheme)
-        else:
-            print "Could not find portmanteau of '{}' and '{}'".format(self.word1.grapheme, self.word2.grapheme)
+    def __str__(self):
+        # TODO: order words based on gramatical rules (adj noun, adv adj, etc)
+        return '{} {}\nNormed Overlap:\t{}\nNormed Distance:\t{}\nAbsolute Overlap:\t{}\nAbsolute Distance:\t{}'.format(self.word1.grapheme, self.word2.grapheme, self.normed_overlap_size, self.normed_phoneme_distance, self.overlap_size, self.phoneme_distance)
 
 
 ###############################
@@ -405,23 +316,33 @@ def parse_input(input_string):
     return Word(grapheme1, phoneme1), Word(grapheme2, phoneme2)
 
 
-def get_valid_portmanteaus(words1_neighbors, words2_neighbors):
-    portmanteau_list = []
+def get_valid_puns(words1_neighbors, words2_neighbors, ordered=True):
+    pun_list = []
     for neighbor1 in words1_neighbors:
         for neighbor2 in words2_neighbors:
-            this_portmanteau = Portmanteau(neighbor1, neighbor2)
-            this_portmanteau.generate_portmanteau_word()
-            # TODO: change 'has_portmanteau' from a method to a function
-            if this_portmanteau.has_portmanteau:
-                portmanteau_list.append(this_portmanteau)
+            this_pun = Pun(neighbor1, neighbor2)
+            this_pun.generate_pun()
+            if this_pun.is_valid_pun():
+                pun_list.append(this_pun)
 
-    return portmanteau_list
+    # sort using the natural quality ordering
+    if ordered:
+        pun_list.sort(reverse=True)
+
+    return pun_list
 
 
 if __name__ == '__main__':
 
-    # Load Google's pre-trained Word2Vec model
-    word2vec_model = gensim.models.KeyedVectors.load_word2vec_format('./data/GoogleNews-vectors-negative300.bin.gz', binary=True)  
+    # Parse input args
+    if '--testing' in sys.argv:
+        is_test = True
+    else:
+        is_test = False
+
+    if not is_test:
+        # Load Google's pre-trained Word2Vec model
+        word2vec_model = gensim.models.KeyedVectors.load_word2vec_format('./data/GoogleNews-vectors-negative300.bin.gz', binary=True)  
 
     # Load CMUdict phonetic dictionary
     grapheme_to_phoneme_dict = nltk.corpus.cmudict.dict()
@@ -439,10 +360,14 @@ if __name__ == '__main__':
 
         word1, word2 = parse_input(input_string)
 
-        nearest_words1 = word1.get_neighbor_words()
-        nearest_words2 = word2.get_neighbor_words()
+        if not is_test:
+            nearest_words1 = word1.get_neighbor_words()
+            nearest_words2 = word2.get_neighbor_words()
+        else:
+            nearest_words1 = [word1]
+            nearest_words2 = [word2]
 
-        portmanteau_list = get_valid_portmanteaus(nearest_words1, nearest_words2)
+        pun_list = get_valid_puns(nearest_words1, nearest_words2)
 
-        for portmanteau in portmanteau_list:
-            portmanteau.print_portmanteau()
+        for pun in pun_list:
+            print pun
