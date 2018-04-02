@@ -14,10 +14,10 @@ ARPABET_DIPHTHONGS = set(['AW', 'AY', 'EY', 'OW', 'OY'])
 ARPABET_RHOTICS = set(['ER'])
 
 ARPABET_PHONE_TO_PHONOLOGICAL_PHONE_DICT = {
-    'AA': ['AA']
-    'AE': ['AE']
-    'AH': ['AH']
-    'AO': ['AO']
+    'AA': ['AA'],
+    'AE': ['AE'],
+    'AH': ['AH'],
+    'AO': ['AO'],
     'AW': ['AA', 'UH'], # diphthong
     'AY': ['AA', 'IH'], # diphthong
     'B': ['B'],
@@ -138,12 +138,14 @@ class Word(object):
 
         return neighbor_words
 
-    def get_semantic_neighbor_graphemes(self, is_recursive=False, max_neighbors=300, max_recursive_neighbors=50):
+    def get_semantic_neighbor_graphemes(self, is_recursive=False, max_neighbors=100, max_recursive_neighbors=50):
         '''
         Find semantic neighbor graphemes using word2vec
 
         is_recursive = False : find the max_neighbors nearest neighbors to self.grapheme
         is_recursive = True  : find the max_recursive_neighbors nearest neighbors to self.grapheme, and then find the max_recursive_neighbors to *those*, removing duplicates
+
+        TODO: Remove recursion logic
         '''
         if is_recursive:
             return Word.get_word2vec_neighbors(self.grapheme, max_neighbors)
@@ -186,7 +188,7 @@ class Word(object):
         A phonological-type phoneme is a phoneme which breaks apart diphthongs and rhotics into sub-phones
         This representation can then be directly mapped onto phonological feature vectors
         '''
-        arpabet_phoneme = get_clean_phoneme(phoneme)
+        arpabet_phoneme = Word.get_clean_phoneme(phoneme)
         phonological_phone_list = [ARPABET_PHONE_TO_PHONOLOGICAL_PHONE_DICT[phone] for phone in arpabet_phoneme]
         return reduce(lambda x,y: x+y, phonological_phone_list)
 
@@ -195,7 +197,7 @@ class Word(object):
         '''
         Convert phoneme to phonological [n_phones x n_features] feature array
         '''
-        phonological_phoneme = get_phonological_phoneme(phoneme)
+        phonological_phoneme = Word.get_phonological_phoneme(phoneme)
         feature_list = [PHONOLOGICAL_PHONE_TO_PHONOLOGICAL_FEATURE_DICT[phone] for phone in phonological_phoneme]
         return np.array(feature_list)
 
@@ -215,9 +217,11 @@ class Pun(object):
     MAX_NORMED_DISTANCE = 0.4
     MIN_NORMED_OVERLAP = 0.4
 
-    def __init__(self, word1, word2, phoneme_distance=None, normed_phoneme_distance=None, overlap_size=None, normed_overlap_size=None):
+    def __init__(self, word1, word2, phonological_overlap1=None, phonological_overlap2=None, phoneme_distance=None, normed_phoneme_distance=None, overlap_size=None, normed_overlap_size=None):
         self.word1 = word1
         self.word2 = word2
+        self.phonological_overlap1 = phonological_overlap1
+        self.phonological_overlap2 = phonological_overlap2
         self.phoneme_distance = phoneme_distance
         self.normed_phoneme_distance = normed_phoneme_distance
         self.overlap_size = overlap_size
@@ -229,49 +233,88 @@ class Pun(object):
         '''
 
         # Only attempt to generate a pun if each word is long enough
-        if len(self.word1.phoneme) < MIN_LENGTH or len(self.word2.phoneme) < MIN_LENGTH:
+        if len(self.word1.phoneme) < Pun.MIN_LENGTH or len(self.word2.phoneme) < Pun.MIN_LENGTH:
             self.is_pun = False
             return
 
         # For each allowable window size, consider all combinations of subphones
         min_phonological_features = min([len(self.word1.phonological_features), len(self.word2.phonological_features)])
-        max_phonological_features = min([len(self.word1.phonological_features), len(self.word2.phonological_features)])
-        for overlap in range(MIN_OVERLAP, min_phonological_features + 1):
+        max_phonological_features = max([len(self.word1.phonological_features), len(self.word2.phonological_features)])
+        for overlap in range(Pun.MIN_OVERLAP, min_phonological_features + 1):
             for i1 in range(len(self.word1.phonological_features) - overlap + 1):
                 for i2 in range(len(self.word2.phonological_features) - overlap + 1):
-                    phoneme_distance = Pun.phonological_distance(self.word1.phonological_features[i:j], self.word2.phonological_features[k:l])
+                    phonological_overlap1 = self.word1.phonological_phoneme[i1:i1+overlap]
+                    phonological_overlap2 = self.word2.phonological_phoneme[i2:i2+overlap]
+                    phoneme_distance = Pun.phonological_distance(self.word1.phonological_features[i1:i1+overlap], self.word2.phonological_features[i2:i2+overlap])
                     normed_phoneme_distance = 1.0 * phoneme_distance / max_phonological_features
                     normed_overlap_size = 1.0 * overlap / max_phonological_features
-                    this_pun = Pun(self.word1, self.word2, phoneme_distance=phoneme_distance, normed_phoneme_distance=normed_phoneme_distance, overlap_size=overlap, normed_overlap_size=normed_overlap_size)      
+                    this_pun = Pun(self.word1, self.word2, phonological_overlap1=phonological_overlap1, phonological_overlap2=phonological_overlap2, phoneme_distance=phoneme_distance, normed_phoneme_distance=normed_phoneme_distance, overlap_size=overlap, normed_overlap_size=normed_overlap_size)      
                     # TODO: initialize with first quality specs
                     if self.phoneme_distance is None or this_pun > self: # no distances yet computed
+                        self.phonological_overlap1 = phonological_overlap1
+                        self.phonological_overlap2 = phonological_overlap2
                         self.phoneme_distance = phoneme_distance
                         self.normed_phoneme_distance = normed_phoneme_distance
                         self.overlap_size = overlap
                         self.normed_overlap_size = normed_overlap_size
 
     def is_valid_pun(self):
-        if min(len(self.word1.phoneme), len(self.word1.phoneme)) >= MIN_LENGTH and self.overlap_size >= MIN_OVERLAP and self.normed_phoneme_distance <= MAX_NORMED_DISTANCE and self.normed_overlap_size >= MIN_NORMED_OVERLAP:
+        if min(len(self.word1.phoneme), len(self.word1.phoneme)) >= Pun.MIN_LENGTH and self.overlap_size >= Pun.MIN_OVERLAP and self.normed_phoneme_distance <= Pun.MAX_NORMED_DISTANCE and self.normed_overlap_size >= Pun.MIN_NORMED_OVERLAP:
             return True
         else:
             return False
 
     def pun_quality_tuple(self):
         # high, low, high, low
-        return (self.normed_overlap_size, -self.normed_phoneme_distance, self.overlap_size, -self.phoneme_distance)
+        # Ok... ording logic is fucked; really, just need to hold onto whichever one(s) allow me to satisfy the 'is_valid_pun' constraints
+        return (-self.normed_phoneme_distance, self.normed_overlap_size, -self.phoneme_distance, self.overlap_size)
 
     def __gt__(self, another_pun):
-        return self.pun_quality_tuple() > another_pun.pun_quality_tuple()
+        '''
+        Better off performing an alignment with respect to a loss here...
+
+        First check if one of the puns meets the minimum sucess criteria; if so, then rank it higher
+
+        If both (or neither) meet the success criteria, then rank them according to tuple order
+        '''
+        if self.is_valid_pun() and not another_pun.is_valid_pun():
+            return True
+        elif not self.is_valid_pun() and another_pun.is_valid_pun():
+            return False
+        else:
+            return self.pun_quality_tuple() > another_pun.pun_quality_tuple()
  
     def __lt__(self, another_pun):
-        return self.pun_quality_tuple() < another_pun.pun_quality_tuple()
+        '''
+        Better off performing an alignment with respect to a loss here...
+
+        First check if one of the puns meets the minimum sucess criteria; if so, then rank it higher
+
+        If both (or neither) meet the success criteria, then rank them according to tuple order
+        '''
+        if self.is_valid_pun() and not another_pun.is_valid_pun():
+            return False
+        elif not self.is_valid_pun() and another_pun.is_valid_pun():
+            return True
+        else:
+            return self.pun_quality_tuple() < another_pun.pun_quality_tuple()
 
     def __eq__(self, another_pun):
         return self.pun_quality_tuple() == another_pun.pun_quality_tuple()
 
     def __str__(self):
         # TODO: order words based on gramatical rules (adj noun, adv adj, etc)
-        return '{} {}\nNormed Overlap:\t{}\nNormed Distance:\t{}\nAbsolute Overlap:\t{}\nAbsolute Distance:\t{}'.format(self.word1.grapheme, self.word2.grapheme, self.normed_overlap_size, self.normed_phoneme_distance, self.overlap_size, self.phoneme_distance)
+        return '{} {}\n({} / {})\nNormed Distance:\t\t{}\nNormed Overlap:\t{}\nAbsolute Distance:\t{}\nAbsolute Overlap:\t{}\n'.format(self.word1.grapheme, self.word2.grapheme, '-'.join(self.phonological_overlap1), '-'.join(self.phonological_overlap2), self.normed_phoneme_distance, self.normed_overlap_size, self.phoneme_distance, self.overlap_size)
+
+    @staticmethod
+    def phonological_distance(feature_array1, feature_array2):
+        '''
+        Phoneme distance is the sum of the constituent phone distances
+        '''
+        if len(feature_array1) == len(feature_array2):
+            return abs(feature_array1 - feature_array2).sum()
+        else:
+            raise Exception('Feature arrays must be the same length: {} != {}'.format(len(feature_array1), len(feature_array2)))
 
 
 ###############################
@@ -316,13 +359,13 @@ def parse_input(input_string):
     return Word(grapheme1, phoneme1), Word(grapheme2, phoneme2)
 
 
-def get_valid_puns(words1_neighbors, words2_neighbors, ordered=True):
+def get_valid_puns(words1_neighbors, words2_neighbors, ordered=True, is_test=False):
     pun_list = []
     for neighbor1 in words1_neighbors:
         for neighbor2 in words2_neighbors:
             this_pun = Pun(neighbor1, neighbor2)
             this_pun.generate_pun()
-            if this_pun.is_valid_pun():
+            if this_pun.is_valid_pun() or is_test:
                 pun_list.append(this_pun)
 
     # sort using the natural quality ordering
@@ -349,14 +392,13 @@ if __name__ == '__main__':
 
     while True:
         input_string = raw_input("\nSeed words:  ")
-        # input_string = "labrador dormitory"
 
-        status, message = validate_input(input_string)
-
-        # If anything is wrong with the input, set the status to 1, print a message describing the problem, and skip the rest of the logic
-        if status == 1:
-            print message
-            continue
+        if not is_test:
+            status, message = validate_input(input_string)
+            # If anything is wrong with the input, set the status to 1, print a message describing the problem, and skip the rest of the logic
+            if status == 1:
+                print message
+                continue
 
         word1, word2 = parse_input(input_string)
 
@@ -367,7 +409,7 @@ if __name__ == '__main__':
             nearest_words1 = [word1]
             nearest_words2 = [word2]
 
-        pun_list = get_valid_puns(nearest_words1, nearest_words2)
+        pun_list = get_valid_puns(nearest_words1, nearest_words2, is_test=is_test)
 
         for pun in pun_list:
             print pun
