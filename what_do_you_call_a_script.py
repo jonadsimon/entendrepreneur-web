@@ -13,6 +13,8 @@ ARPABET_CONSONANTS = set(['B', 'CH', 'D', 'DH', 'DX', 'EL', 'EM', 'EN', 'F', 'G'
 ARPABET_DIPHTHONGS = set(['AW', 'AY', 'EY', 'OW', 'OY'])
 ARPABET_RHOTICS = set(['ER'])
 
+MAX_PUNS = 100
+
 ARPABET_PHONE_TO_PHONOLOGICAL_PHONE_DICT = {
     'AA': ['AA'],
     'AE': ['AE'],
@@ -267,7 +269,7 @@ class Pun(object):
     def pun_quality_tuple(self):
         # high, low, high, low
         # Ok... ording logic is fucked; really, just need to hold onto whichever one(s) allow me to satisfy the 'is_valid_pun' constraints
-        return (-self.normed_phoneme_distance, self.normed_overlap_size, -self.phoneme_distance, self.overlap_size)
+        return (-self.normed_phoneme_distance, self.overlap_size, -self.phoneme_distance, self.normed_overlap_size)
 
     def __gt__(self, another_pun):
         '''
@@ -304,7 +306,7 @@ class Pun(object):
 
     def __str__(self):
         # TODO: order words based on gramatical rules (adj noun, adv adj, etc)
-        return '{} {}\n({} / {})\nNormed Distance:\t\t{}\nNormed Overlap:\t{}\nAbsolute Distance:\t{}\nAbsolute Overlap:\t{}\n'.format(self.word1.grapheme, self.word2.grapheme, '-'.join(self.phonological_overlap1), '-'.join(self.phonological_overlap2), self.normed_phoneme_distance, self.normed_overlap_size, self.phoneme_distance, self.overlap_size)
+        return '\n{} {}\n({} / {})\nNormed Distance:\t{:.02}\nNormed Overlap:\t\t{:.02}\nAbsolute Distance:\t{}\nAbsolute Overlap:\t{}'.format(self.word1.grapheme, self.word2.grapheme, '-'.join(self.phonological_overlap1), '-'.join(self.phonological_overlap2), self.normed_phoneme_distance, self.normed_overlap_size, self.phoneme_distance, self.overlap_size)
 
     @staticmethod
     def phonological_distance(feature_array1, feature_array2):
@@ -411,5 +413,7 @@ if __name__ == '__main__':
 
         pun_list = get_valid_puns(nearest_words1, nearest_words2, is_test=is_test)
 
-        for pun in pun_list:
+        for i, pun in enumerate(pun_list):
+            if i >= MAX_PUNS:
+                break
             print pun
