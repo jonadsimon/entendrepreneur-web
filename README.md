@@ -9,3 +9,30 @@
 * TODO: distinguish between non-stressed and primary-stressed syllables
 
 'google-books-common-words.txt' file from here: http://norvig.com/google-books-common-words.txt
+
+labradormitory
+sighsmologist
+rosemaryotte
+hungrief
+despairplane
+
+
+
+glitterati
+bromance
+backronym
+
+sexcapade
+sexpert
+
+brogrammer
+
+Travelocity
+dramedy
+
+-- Fits structure of the word interior
+Japanoise
+hangry
+Aberzombie
+
+
