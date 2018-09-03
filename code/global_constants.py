@@ -2,6 +2,10 @@
 ### GLOBAL CONSTANTS ###
 ########################
 
+# Might be better off just hard-coding phonetically similar phones...
+# in additional to total distance, add additional normalize cutoff
+# i.e. <= 4 overall, and <2 normalized
+
 ARPABET_VOWELS = set(['AA', 'AE', 'AH', 'AO', 'AW', 'AX', 'AXR', 'AY', 'EH', 'ER', 'EY', 'IH', 'IX', 'IY', 'OW', 'OY', 'UH', 'UW', 'UX'])
 ARPABET_CONSONANTS = set(['B', 'CH', 'D', 'DH', 'DX', 'EL', 'EM', 'EN', 'F', 'G', 'H', 'HH', 'JH', 'K', 'L', 'M', 'N', 'NG', 'NX', 'P', 'Q', 'R', 'S', 'SH', 'T', 'TH', 'V', 'W', 'WH', 'Y', 'Z', 'ZH'])
 
@@ -11,8 +15,12 @@ ARPABET_RHOTICS = set(['ER'])
 MAX_PORTMANTEAUS = 50
 MAX_RHYMES = 50
 MAX_NEIGHBORS = 100
-TEST_LIMIT = 20000
-TEST_INPUT = 'dog hotel'
+FAST_LIMIT = 20000
+# TEST_INPUT = 'labrador dormitory'
+# TEST_INPUT = 'glitter literati'
+TEST_INPUT = 'rosemary marriott'
+
+REPO_HOME = '/Users/jonathansimon/code/what-do-you-call-a-bot/'
 
 # All non-consonent ARPABET characters have an associated stress (either 0,1,2), so always add an extra bit to track this:
 # 0 (none) --> 0, 1 (primary) --> 4, 2 (secondary) --> 2
@@ -157,7 +165,7 @@ PHONOLOGICAL_PHONE_TO_PHONOLOGICAL_FEATURE_DICT = {
     'K': [1,-1,-1,-1,0,-1,0,0,1,1,-1,1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,0],
     'L': [1,1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,1,-1,-1,1,-1,1,-1,-1,0],
     'M': [1,1,-1,1,-1,-1,0,0,-1,0,0,0,0,-1,0,1,-1,-1,-1,-1,-1,-1,1,0],
-    'N': [1,1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,1,-1,-1,-1,-1,-1,-1,1,0],
+    'N': [1,1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,1,-1,-1,-1,-1,-1,-1,1,0], # problematically similar to the 'n' sound
     'NG': [1,1,-1,-1,0,-1,0,0,1,1,-1,1,-1,-1,0,1,-1,-1,-1,-1,-1,-1,1,0],
 
     'o0': [-1,1,1,1,1,-1,0,0,1,-1,-1,1,1,1,1,1,-1,-1,1,-1,-1,-1,-1,0],
@@ -165,7 +173,7 @@ PHONOLOGICAL_PHONE_TO_PHONOLOGICAL_FEATURE_DICT = {
     'o2': [-1,1,1,1,1,-1,0,0,1,-1,-1,1,1,1,1,1,-1,-1,1,-1,-1,-1,-1,2],
 
     'P': [1,-1,-1,1,-1,-1,0,0,-1,0,0,0,0,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,0],
-    'R': [1,1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,1,-1,-1,1,-1,-1,-1,-1,0],
+    'R': [1,1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,1,-1,-1,1,-1,-1,-1,-1,0], # problematically similar to the 'n' sound
     'S': [1,-1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,-1,-1,-1,1,1,-1,-1,-1,0],
     'SH': [1,-1,-1,-1,0,1,-1,1,-1,0,0,0,0,-1,0,-1,-1,-1,1,-1,-1,-1,-1,0],
     'T': [1,-1,-1,-1,0,1,1,-1,-1,0,0,0,0,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,0],

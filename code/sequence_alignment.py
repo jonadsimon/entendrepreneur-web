@@ -92,6 +92,6 @@ class SequenceAlignment(object):
 		# How many seq1 characters precede start_chunk_idx?
 		# How many seq1 characters precede end_chunk_idx?
 		subseq1_start_idx = sum(map(len, self.seq1[:start_chunk_idx]))
-		subseq2_end_idx = sum(map(len, self.seq1[:end_chunk_idx+1]))
+		subseq2_end_idx = sum(map(len, self.seq1[:end_chunk_idx+1])) - 1
 
 		return subseq1_start_idx, subseq2_end_idx

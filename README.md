@@ -1,6 +1,6 @@
 ## what-do-you-call-a-script
 
-`what_do_you_call_a_script.py'
+`punerator.py'
 
 * TODO: overlap should have at least one vowel-sound
 * TODO: find neighbors with a heirarchical (2-level) search with 50 words in each layer
@@ -11,7 +11,7 @@
 'google-books-common-words.txt' file from here: http://norvig.com/google-books-common-words.txt
 
 labradormitory
-sighsmologist
+sighsmologist - X
 rosemaryotte
 hungrief
 despairplane
@@ -19,20 +19,27 @@ despairplane
 
 
 glitterati
-bromance
+bromance - X
 backronym
 
 sexcapade
 sexpert
 
-brogrammer
+brogrammer - X
 
 Travelocity
-dramedy
+dramedy - X
 
 -- Fits structure of the word interior
-Japanoise
-hangry
-Aberzombie
+Japanoise - X
+hangry - X
+Aberzombie - X
 
 
+http://www.artoflanguageinvention.com/papers/features.pdf
+
+Hardcode phoneme distance rules
+
+Swap in facebook word vectors (fastvec)
+Facebok word vectors are trained on wikipedia, so cature different information
+Might want to add it in as yet-another source of word information, same as Wordnet

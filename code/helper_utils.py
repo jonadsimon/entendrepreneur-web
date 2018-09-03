@@ -3,6 +3,8 @@ from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 from portmanteau import Portmanteau
+from global_constants import MAX_NEIGHBORS
+import pdb
 
 ###############################
 ### DEFINE HELPER FUNCTIONS ###
@@ -29,10 +31,10 @@ def alternative_grapheme_capitalizations(grapheme):
 
     capitalization_alternatives = [grapheme]
     capitalization_alternatives.append(grapheme.lower())
-    if len(grapheme1) == 1:
-        capitalization_alternatives.append(grapheme1[0].upper())
-    elif len(grapheme1) > 1:
-        capitalization_alternatives.append(grapheme1[0].upper()+grapheme1[1:].lower())
+    if len(grapheme) == 1:
+        capitalization_alternatives.append(grapheme[0].upper())
+    elif len(grapheme) > 1:
+        capitalization_alternatives.append(grapheme[0].upper()+grapheme[1:].lower())
     return capitalization_alternatives
 
 
@@ -107,7 +109,7 @@ def get_related_wordnet_lemmas(grapheme):
 
 
 def get_word2vec_neighbors(grapheme, word2vec_model):
-    for g in alternative_grapheme_capitalizations(g):
+    for g in alternative_grapheme_capitalizations(grapheme):
         if g in word2vec_model.vocab:
             return list(zip(*word2vec_model.most_similar(positive=[g], topn=MAX_NEIGHBORS))[0])
     else:
@@ -153,22 +155,37 @@ def get_semantic_neighbor_graphemes(grapheme, word2vec_model):
     # DO NOT like how this 'word2vec_model' parameter is being passed through
     word2vec_neighbors = get_word2vec_neighbors(grapheme, word2vec_model)
 
+    # word2vec sometimes returns funky unicode characters like umlouts, so make sure to catch/discard these before moving on
+    word2vec_neighbors_clean = []
+    for g in word2vec_neighbors:
+        try:
+            word2vec_neighbors_clean.append(str(g))
+        except:
+            pass
+
     # Keep it simple to start: Downcase --> Lemmatize --> Set
     # Make sure to consider the lemmas for ALL possible synsets of a given word, and pick the shortest
     wnl = WordNetLemmatizer()
-    semantic_neighbor_graphemes = set(map(lambda g: str(get_shortest_lemma(str(g).lower(), wnl)), wordnet_neighbors+word2vec_neighbors))
+    semantic_neighbor_graphemes = set(map(lambda g: get_shortest_lemma(g.lower(), wnl), [grapheme]+wordnet_neighbors+word2vec_neighbors_clean))
     return semantic_neighbor_graphemes
 
 
-def get_portmanteaus(words1_neighbors, words2_neighbors):
-    portmanteau_list = []
+def get_portmanteaus(words1_neighbors, words2_neighbors, grapheme_to_word_dict):
+    # use a set to avoid redundancy in case the same word appears in both sets
+    portmanteau_set = set()
     for neighbor1 in words1_neighbors:
         for neighbor2 in words2_neighbors:
-            portmanteau, status, message = Portmanteau.get_portmanteau(neighbor1, neighbor2)
+            # generate both orderings
+            portmanteau, status, message = Portmanteau.get_portmanteau(neighbor1, neighbor2, grapheme_to_word_dict)
             if status == 0:
-                portmanteau_list.append(portmanteau)
+                portmanteau_set.add(portmanteau)
+            portmanteau, status, message = Portmanteau.get_portmanteau(neighbor2, neighbor1, grapheme_to_word_dict)
+            if status == 0:
+                portmanteau_set.add(portmanteau)
     
-    # Order according to quality
-    pun_list.sort(key=lambda x: x.ordering_criterion())
+    portmanteau_list = list(portmanteau_set)
 
-    return pun_list
+    # Order according to quality
+    portmanteau_list.sort(key=lambda x: x.ordering_criterion())
+
+    return portmanteau_list

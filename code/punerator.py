@@ -2,9 +2,10 @@ import sys
 import gensim
 import nltk
 import numpy as np
-from global_contants import *
-from help_utils import *
+from global_constants import *
+from helper_utils import *
 from pronunciation_dictionary import PronunciationDictionary
+import pdb
 
 # Steps:
 # 0. Accept inputs
@@ -20,13 +21,13 @@ if __name__ == '__main__':
     if not options['test']:
         # Load Google's pre-trained Word2Vec model
         if not options['fast']:
-            word2vec_model = gensim.models.KeyedVectors.load_word2vec_format('./data/GoogleNews-vectors-negative300.bin.gz', binary=True)  
+            word2vec_model = gensim.models.KeyedVectors.load_word2vec_format(REPO_HOME+'data/GoogleNews-vectors-negative300.bin.gz', binary=True)  
         else:
             # restrict to a small subset of the overall vector set
-            word2vec_model = gensim.models.KeyedVectors.load_word2vec_format('./data/GoogleNews-vectors-negative300.bin.gz', binary=True, limit=TEST_LIMIT)
+            word2vec_model = gensim.models.KeyedVectors.load_word2vec_format(REPO_HOME+'data/GoogleNews-vectors-negative300.bin.gz', binary=True, limit=FAST_LIMIT)
 
     # Load PronunciationDictionary' constructed by augmenting the CMUdict phonetic dictionary (nltk.corpus.cmudict.dict())
-    grapheme_to_word_dict = PronounciationDictionary.load('../data/pronunciation_dictionary.pkl')
+    grapheme_to_word_dict = PronunciationDictionary.load(REPO_HOME+'data/pronunciation_dictionary.pkl')
 
     while True:
         if not options['test']:
@@ -49,10 +50,11 @@ if __name__ == '__main__':
         else:
             grapheme1, grapheme2 = parse_input(TEST_INPUT)
             # !!! NEED TO SPECIAL-CASE THIS SITUATION, OR ELSE REDEFINE "TEST" TO MEAN "FAST"
-            nearest_words1 = [grapheme_to_word_dict(grapheme1)]
-            nearest_words2 = [grapheme_to_word_dict(grapheme2)]
+            nearest_words1 = [grapheme_to_word_dict.get_word(grapheme1)]
+            nearest_words2 = [grapheme_to_word_dict.get_word(grapheme2)]
 
-        portmanteaus = get_portmanteaus(nearest_words1, nearest_words2)
+        portmanteaus = get_portmanteaus(nearest_words1, nearest_words2, grapheme_to_word_dict)
+        # pdb.set_trace()
         # rhymes = get_rhymes(nearest_words1, nearest_words2)
 
         for i, portmanteau in enumerate(portmanteaus):
@@ -67,3 +69,7 @@ if __name__ == '__main__':
         #     if i >= MAX_RHYMES:
         #         break
         #     print rhyme
+
+        # if it's a test run, we only want to run the while-loop once
+        if options['test']:
+            break
