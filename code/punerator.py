@@ -11,7 +11,7 @@ import pdb
 # 0. Accept inputs
 # 1. Map to nearest neighbors (catch errors/make suggestions)
 # 2. Map to phonemes/words
-# 3. n^2 search to identify portmanteaus and rhyms
+# 3. n^2 search to identify portmanteaus and rhymes
 # 4. print results
 
 if __name__ == '__main__':
@@ -55,8 +55,13 @@ if __name__ == '__main__':
 
         portmanteaus = get_portmanteaus(nearest_words1, nearest_words2, grapheme_to_word_dict)
         # pdb.set_trace()
-        # rhymes = get_rhymes(nearest_words1, nearest_words2)
+        rhymes = get_rhymes(nearest_words1, nearest_words2, grapheme_to_word_dict)
 
+        print '''
+        ########################
+        ##### PORTMANTEAUS #####
+        ########################
+        '''
         for i, portmanteau in enumerate(portmanteaus):
             if i >= MAX_PORTMANTEAUS:
                 break
@@ -65,10 +70,18 @@ if __name__ == '__main__':
             else:
                 print portmanteau
 
-        # for i, rhyme in enumerate(rhymes):
-        #     if i >= MAX_RHYMES:
-        #         break
-        #     print rhyme
+        print '''
+        ##################
+        ##### RHYMES #####
+        ##################
+        '''
+        for i, rhyme in enumerate(rhymes):
+            if i >= MAX_RHYMES:
+                break
+            if options['debug']:
+                print repr(rhyme)
+            else:
+                print rhyme
 
         # if it's a test run, we only want to run the while-loop once
         if options['test']:

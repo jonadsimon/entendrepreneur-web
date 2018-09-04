@@ -12,15 +12,37 @@ ARPABET_CONSONANTS = set(['B', 'CH', 'D', 'DH', 'DX', 'EL', 'EM', 'EN', 'F', 'G'
 ARPABET_DIPHTHONGS = set(['AW', 'AY', 'EY', 'OW', 'OY'])
 ARPABET_RHOTICS = set(['ER'])
 
-MAX_PORTMANTEAUS = 50
-MAX_RHYMES = 50
-MAX_NEIGHBORS = 100
+MAX_PORTMANTEAUS = 10
+MAX_RHYMES = 20
+MAX_NEIGHBORS = 80
 FAST_LIMIT = 20000
 # TEST_INPUT = 'labrador dormitory'
 # TEST_INPUT = 'glitter literati'
-TEST_INPUT = 'rosemary marriott'
+# TEST_INPUT = 'rosemary marriott'
+TEST_INPUT = 'sprocket locket'
 
 REPO_HOME = '/Users/jonathansimon/code/what-do-you-call-a-bot/'
+
+POS_ORDERING = {
+    ('n','v'): 'keep',
+    ('v','n'): 'flip',
+    ('a','n'): 'keep',
+    ('n','a'): 'flip',
+    ('s','n'): 'keep',
+    ('n','s'): 'flip',
+    ('n','r'): 'keep',
+    ('r','n'): 'flip',
+    ('a','v'): 'keep',
+    ('v','a'): 'flip',
+    ('r','a'): 'keep',
+    ('a','r'): 'flip',
+    ('s','v'): 'keep',
+    ('v','s'): 'flip',
+    ('r','s'): 'keep',
+    ('s','r'): 'flip',
+    ('r','v'): 'keep',
+    ('v','r'): 'flip',
+}
 
 # All non-consonent ARPABET characters have an associated stress (either 0,1,2), so always add an extra bit to track this:
 # 0 (none) --> 0, 1 (primary) --> 4, 2 (secondary) --> 2
@@ -118,6 +140,9 @@ ARPABET_PHONE_TO_PHONOLOGICAL_PHONE_DICT = {
     'Z': ['Z'],
     'ZH': ['ZH'],
 }
+
+# Replace all of these with a large hard-coded distance matrix, e.g.
+# T=D, V=F, S=Z, B=P, L!=R
 
 PHONOLOGICAL_PHONE_TO_PHONOLOGICAL_FEATURE_DICT = {
     'AA0': [-1,1,1,1,-1,-1,0,0,1,-1,1,-1,-1,1,-1,1,-1,-1,1,-1,-1,-1,-1,0], # variant
