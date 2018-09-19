@@ -222,15 +222,6 @@ class Portmanteau(object):
 			raise "Argument 'side' must be either 'head' or 'tail'"
 		return 1.0 / sum(subgraph_matches)
 
-	# @staticmethod
-	# def get_subphoneme_prob(subphoneme, pronunciation_dictionary):
-	# 	'''
-	# 	How common is it for this particular phonetic element to occur at the start of end of a word?
-	# 	If it's extremely common, then it's probably a (garbage) common prefix/suffix
-	# 	'''
-	# 	subphoneme_matches = [1 if subphoneme == word.arpabet_phoneme[:len(subphoneme)] or subphoneme == word.arpabet_phoneme[:len(subphoneme)] else 0 for word in pronunciation_dictionary.grapheme_to_word_dict.itervalues()]
-	# 	return 1.0 / sum(subphoneme_matches)
-
 	@staticmethod
 	def get_grapheme_phoneme_prob(subgrapheme, subphoneme, pronunciation_dictionary):
 		'''

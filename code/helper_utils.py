@@ -22,15 +22,6 @@ def parse_options(args):
            options[arg[2:]] = True
     return options
 
-def load_fasttext_vectors(fname):
-    fin = io.open(fname, 'r', encoding='utf-8', newline='\n', errors='ignore')
-    n, d = map(int, fin.readline().split())
-    data = {}
-    for line in fin:
-        tokens = line.rstrip().split(' ')
-        data[tokens[0]] = map(float, tokens[1:])
-    return data
-
 def alternative_grapheme_capitalizations(grapheme):
     '''
     For a given grapheme, returns a list containing:
@@ -50,7 +41,7 @@ def alternative_grapheme_capitalizations(grapheme):
 
 def validate_input(input_string, recognized_graphemes):
     '''
-    Verify that the input is comprised of two graphemes, and that both graphemes are present in Word2Vec
+    Verify that the input is comprised of two graphemes, and that both graphemes are present in FastVec
     '''
     if type(input_string) is not str or len(input_string.split()) != 2:
         status = 1
@@ -58,7 +49,7 @@ def validate_input(input_string, recognized_graphemes):
     else:
         grapheme1, grapheme2 = input_string.split()
 
-        # Each grapheme exists in word2vec either:
+        # Each grapheme exists in fastvec either:
         # 1) as-is
         # 2) all lower-cased
         # 3) all lower-cased except for first letter
@@ -90,38 +81,10 @@ def flatten(l):
     return [item for sublist in l for item in sublist]
 
 
-def get_related_wordnet_lemmas(grapheme):
-    '''
-    Return *all* lemmas for *all* synsets within distance-1 of *all* of the grapheme's synsets
-    Don't need to muck around with cases, because WordNet is smart enough to handle that itself
-    '''
-    if not wn.synsets(grapheme):
-        return []
-    
-    # These are all of the non-antonym non-POS synset relationships recognized by WordNet
-    relationship_types = [
-        'hypernyms','instance_hypernyms','hyponyms','instance_hyponyms', \
-        'member_holonyms','substance_holonyms','part_holonyms','member_meronyms', \
-        'substance_meronyms','part_meronyms','topic_domains','region_domains', \
-        'usage_domains','attributes','entailments','causes','also_sees','verb_groups','similar_tos']
-    
-    lemmas = set()
-    for synset in wn.synsets(grapheme):
-        # distance-0 lemmas
-        lemmas.update(synset.lemma_names())
-        # distance-1 lemmas
-        for relationship in relationship_types:
-            related_synsets = getattr(synset, relationship)()
-            lemmas.update(flatten([s.lemma_names() for s in related_synsets]))
-        
-    # Convert from unicode with str, and return the results as a list
-    return list(map(str, lemmas))
-
-
-def get_word2vec_neighbors(grapheme, word2vec_model):
+def get_fastvec_neighbors(grapheme, fastvec_model):
     for g in alternative_grapheme_capitalizations(grapheme):
-        if g in word2vec_model.vocab:
-            return list(zip(*word2vec_model.most_similar(positive=[g], topn=MAX_NEIGHBORS))[0])
+        if g in fastvec_model.vocab:
+            return list(zip(*fastvec_model.most_similar(positive=[g], topn=MAX_NEIGHBORS))[0])
     else:
         raise 'This code path should NEVER execute, something has gone HORRIBLY wrong'
 
@@ -159,24 +122,22 @@ def get_shortest_lemma(grapheme, lemmatizer=WordNetLemmatizer(), stemmer=PorterS
     return shortest_lemma
 
 
-def get_semantic_neighbor_graphemes(grapheme, word2vec_model):
-    wordnet_neighbors = get_related_wordnet_lemmas(grapheme)
+def get_semantic_neighbor_graphemes(grapheme, fastvec_model):
+    # DO NOT like how this 'fastvec_model' parameter is being passed through
+    fastvec_neighbors = get_fastvec_neighbors(grapheme, fastvec_model)
 
-    # DO NOT like how this 'word2vec_model' parameter is being passed through
-    word2vec_neighbors = get_word2vec_neighbors(grapheme, word2vec_model)
-
-    # word2vec sometimes returns funky unicode characters like umlouts, so make sure to catch/discard these before moving on
-    word2vec_neighbors_clean = []
-    for g in word2vec_neighbors:
+    # fastvec sometimes returns funky unicode characters like umlouts, so make sure to catch/discard these before moving on
+    fastvec_neighbors_clean = [grapheme]
+    for g in fastvec_neighbors:
         try:
-            word2vec_neighbors_clean.append(str(g))
+            fastvec_neighbors_clean.append(str(g))
         except:
             pass
 
     # Keep it simple to start: Downcase --> Lemmatize --> Set
     # Make sure to consider the lemmas for ALL possible synsets of a given word, and pick the shortest
     wnl = WordNetLemmatizer()
-    semantic_neighbor_graphemes = set(map(lambda g: get_shortest_lemma(g.lower(), wnl), [grapheme]+wordnet_neighbors+word2vec_neighbors_clean))
+    semantic_neighbor_graphemes = set(map(lambda g: get_shortest_lemma(g.lower(), wnl), fastvec_neighbors_clean))
     return semantic_neighbor_graphemes
 
 
