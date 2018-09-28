@@ -5,7 +5,6 @@ import numpy as np
 from global_constants import *
 from helper_utils import *
 from pronunciation_dictionary import PronunciationDictionary
-import pdb
 
 # Steps:
 # 0. Accept inputs
@@ -54,7 +53,6 @@ if __name__ == '__main__':
             nearest_words2 = [grapheme_to_word_dict.get_word(grapheme2)]
 
         portmanteaus = get_portmanteaus(nearest_words1, nearest_words2, grapheme_to_word_dict)
-        # pdb.set_trace()
         rhymes = get_rhymes(nearest_words1, nearest_words2, grapheme_to_word_dict)
 
         print '''

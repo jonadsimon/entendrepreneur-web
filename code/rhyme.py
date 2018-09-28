@@ -1,7 +1,40 @@
 from global_constants import *
+from helper_utils import *
 import numpy as np
 from nltk.corpus import wordnet as wn
-import pdb
+
+def phone_distance(phone1, phone2):
+    '''
+    identical pairs --> 0
+    unstressed / primary stress --> 1
+    near-match consonants --> 2
+    near-match vowels --> 4
+    non-matched  --> np.inf
+    '''
+    if phone1 == phone2:
+        return 0
+    elif filter(str.isalpha, phone1) == filter(str.isalpha, phone2):
+        # small penalty if identical BUT one has a primary stress and the other is nonstressed
+        if (phone1[-1], phone2[-1]) == ('0','1') or (phone1[-1], phone2[-1]) == ('1','0'):
+            return 1
+        # no penalty for secondary stress discrepancies
+        else:
+            return 0
+    elif (phone1,phone2) in NEAR_MISS_CONSONANTS or (phone2,phone1) in NEAR_MISS_CONSONANTS:
+        return 2
+    # make sure to strip off the (possibly nonexistent) before checking for set inclusion
+    # if the vowels don't match then the stresses DEFINITELY need to match
+    # TODO: handle this via some sort of custom lookup function
+    elif ((phone1[:-1],phone2[:-1]) in NEAR_MISS_VOWELS or (phone2[:-1],phone1[:-1]) in NEAR_MISS_VOWELS) and phone1[-1] == phone2[-1]:
+        return 4
+    else:
+        return np.inf
+
+def phoneme_distance(phoneme1, phoneme2):
+    '''
+    Don't use fancy hand-coded rules, keep the same distance logic, just swap in the new metric
+    '''
+    return sum([phone_distance(str(p1),str(p2)) for (p1,p2) in zip(phoneme1, phoneme2)])
 
 class Rhyme(object):
 	min_overlap_vowel_phones = 1
@@ -40,91 +73,49 @@ class Rhyme(object):
 		# these are the default return values if no good overlaps are found
 		rhyme, status, message = None, 1, 'no <=max_overlap_dist overlaps were found'
 
-		min_word_len = min(len(word1.vectorizable_phoneme), len(word2.vectorizable_phoneme))
+		min_word_len = min(len(word1.arpabet_phoneme), len(word2.arpabet_phoneme))
 		# go large-to-small rather than small-to-large
 		for overlap_len in range(min_word_len-1,0,-1):
-			word1_vector_overlap = word1.feature_vectors()[-overlap_len:]
-			word2_vector_overlap = word2.feature_vectors()[-overlap_len:]
-
-
-			# if overlap_len == 4:
-			# 	pdb.set_trace()
-			# word1_idx = len(word1.vectorizable_phoneme) - overlap_len
-			# word2_idx = overlap_len
-			# word1_vector_overlap = word1.feature_vectors()[word1_idx:]
-			# word2_vector_overlap = word2.feature_vectors()[:word2_idx]
-
-			overlap_distance = abs(word1_vector_overlap - word2_vector_overlap).sum()
+			word1_arpabet_overlap = word1.arpabet_phoneme[-overlap_len:]
+			word2_arpabet_overlap = word2.arpabet_phoneme[-overlap_len:]
+			word1_arpabet_nonoverlap = word1.arpabet_phoneme[:-overlap_len]
+			word2_arpabet_nonoverlap = word2.arpabet_phoneme[:-overlap_len]
+			overlap_distance = phoneme_distance(word1_arpabet_overlap, word2_arpabet_overlap)
 			if overlap_distance <= cls.max_overlap_dist:
+				# scrap the vectorizable phoneme mapping step, operate solely on the arpabet phoneme
+				
 				# Passes the initial distance test, now map the vectorizable_phoneme to the arpabet_phoneme, and check the remaining conditions
-				try:
-					word1_arpabet_overlap = word1.arpabet_phoneme_to_vectorizable_phoneme_alignment.subseq2_to_subseq1(len(word1.vectorizable_phoneme) - overlap_len, len(word1.vectorizable_phoneme) - 1)
-					word1_arpabet_nonoverlap = word1.arpabet_phoneme_to_vectorizable_phoneme_alignment.subseq2_to_subseq1(0, len(word1.vectorizable_phoneme) - overlap_len - 1)
-				except:
-					rhyme, status, message = None, 1, 'word1 vectorizable_phoneme could not be aligned with arpabet_phoneme'
+				
+				# these redundant 'filter(str.isalpha, str(phone))' blocks are clunky, consider adding a function 'to_unstressed' or 'is_vowel'
+				num_overlap_vowel_phones1 = sum([1 if filter(str.isalpha, str(phone)) in ARPABET_VOWELS else 0 for phone in word1_arpabet_overlap])
+				num_overlap_consonant_phones1 = sum([1 if filter(str.isalpha, str(phone)) in ARPABET_CONSONANTS else 0 for phone in word1_arpabet_overlap])
+				num_non_overlap_phones1 = len(word1_arpabet_nonoverlap)
+				num_overlap_phones1 = len(word1_arpabet_overlap)
+				num_non_overlap_phones2 = len(word2_arpabet_nonoverlap) # need to save this for later
+				first_overlap_phone1 = filter(str.isalpha, str(word1_arpabet_overlap[0]))
+				
+				if num_overlap_vowel_phones1 < cls.min_overlap_vowel_phones:
+					rhyme, status, message = None, 1, 'arpabet overlap does not have enough vowels'
 					continue
-				else:
-					# these redundant 'filter(str.isalpha, str(phone))' blocks are clunky, consider adding a function 'to_unstressed' or 'is_vowel'
-					num_overlap_vowel_phones1 = sum([1 if filter(str.isalpha, str(phone)) in ARPABET_VOWELS else 0 for phone in word1_arpabet_overlap])
-					num_overlap_consonant_phones1 = sum([1 if filter(str.isalpha, str(phone)) in ARPABET_CONSONANTS else 0 for phone in word1_arpabet_overlap])
-					num_non_overlap_phones1 = len(word1_arpabet_nonoverlap)
-					num_overlap_phones1 = len(word1_arpabet_overlap)
-					first_overlap_phone1 = filter(str.isalpha, str(word1_arpabet_overlap[0]))
-					
-					if num_overlap_vowel_phones1 < cls.min_overlap_vowel_phones:
-						rhyme, status, message = None, 1, 'word1 overlap does not have enough vowels'
-						continue
-					elif num_overlap_consonant_phones1 < cls.min_overlap_consonant_phones:
-						rhyme, status, message = None, 1, 'word1 overlap does not have enough consonants'
-						continue
-					elif num_overlap_phones1 < cls.min_overlap_phones:
-						rhyme, status, message = None, 1, 'word1 overlap does not have enough phones'
-						continue
-					elif first_overlap_phone1 not in ARPABET_VOWELS:
-						rhyme, status, message = None, 1, 'word1 overlap does not start with a vowel phone'
-						continue
-
-				try:
-					word2_arpabet_overlap = word2.arpabet_phoneme_to_vectorizable_phoneme_alignment.subseq2_to_subseq1(len(word2.vectorizable_phoneme) - overlap_len, len(word2.vectorizable_phoneme) - 1)
-					word2_arpabet_nonoverlap = word2.arpabet_phoneme_to_vectorizable_phoneme_alignment.subseq2_to_subseq1(0, len(word2.vectorizable_phoneme) - overlap_len - 1)
-				except:
-					rhyme, status, message = None, 1, 'word2 vectorizable_phoneme could not be aligned with arpabet_phoneme'
+				elif num_overlap_consonant_phones1 < cls.min_overlap_consonant_phones:
+					rhyme, status, message = None, 1, 'arpabet overlap does not have enough consonants'
 					continue
-				else:
-					num_overlap_vowel_phones2 = sum([1 if filter(str.isalpha, str(phone)) in ARPABET_VOWELS else 0 for phone in word2_arpabet_overlap])
-					num_overlap_consonant_phones2 = sum([1 if filter(str.isalpha, str(phone)) in ARPABET_CONSONANTS else 0 for phone in word2_arpabet_overlap])
-					num_non_overlap_phones2 = len(word2_arpabet_nonoverlap)
-					num_overlap_phones2 = len(word2_arpabet_overlap)
-					first_overlap_phone2 = filter(str.isalpha, str(word2_arpabet_overlap[0]))
+				elif num_overlap_phones1 < cls.min_overlap_phones:
+					rhyme, status, message = None, 1, 'arpabet overlap does not have enough phones'
+					continue
+				elif first_overlap_phone1 not in ARPABET_VOWELS:
+					rhyme, status, message = None, 1, 'arpabet overlap does not start with a vowel phone'
+					continue
 
-					if num_overlap_vowel_phones2 < cls.min_overlap_vowel_phones:
-						rhyme, status, message = None, 1, 'word2 overlap does not have enough vowels'
-						continue
-					elif num_overlap_consonant_phones2 < cls.min_overlap_consonant_phones:
-						rhyme, status, message = None, 1, 'word2 overlap does not have enough consonants'
-						continue
-					elif num_overlap_phones2 < cls.min_overlap_phones:
-						rhyme, status, message = None, 1, 'word2 overlap does not have enough phones'
-						continue
-					elif first_overlap_phone2 not in ARPABET_VOWELS:
-						rhyme, status, message = None, 1, 'word2 overlap does not start with a vowel phone'
-						continue
-
-				# if overlap_len == 4:
-				# 	pdb.set_trace()
-
-				# vectorizable_phoneme-to-arpabet_phoneme alignments worked *and* all arpabet constraints are met
-				# possible for one grapheme alignment to work, but not the other, HOWEVER enforce that they BOTH work for ease of future logic
-				# (this will throw away some otherwise fine rhymes, so return to handle this edge case later)
+				word1_arpabet_overlap_start_idx, word1_arpabet_overlap_end_idx = len(word1.arpabet_phoneme) - overlap_len, len(word1.arpabet_phoneme) - 1
+				word2_arpabet_overlap_start_idx, word2_arpabet_overlap_end_idx = len(word2.arpabet_phoneme) - overlap_len, len(word2.arpabet_phoneme) - 1
 				try:
-					word1_arpabet_overlap_start_idx, word1_arpabet_overlap_end_idx = word1.arpabet_phoneme_to_vectorizable_phoneme_alignment.subseq2_inds_to_subseq1_inds(len(word1.vectorizable_phoneme) - overlap_len, len(word1.vectorizable_phoneme) - 1)
 					word1_grapheme_overlap_start_idx, word1_grapheme_overlap_end_idx = word1.grapheme_to_arpabet_phoneme_alignment.subseq2_inds_to_subseq1_inds(word1_arpabet_overlap_start_idx, word1_arpabet_overlap_end_idx)
 				except:
 					rhyme, status, message = None, 1, 'word1 arpabet_phoneme could not be aligned with grapheme'
 					continue
 				
 				try:
-					word2_arpabet_overlap_start_idx, word2_arpabet_overlap_end_idx = word2.arpabet_phoneme_to_vectorizable_phoneme_alignment.subseq2_inds_to_subseq1_inds(len(word2.vectorizable_phoneme) - overlap_len, len(word2.vectorizable_phoneme) - 1)
 					word2_grapheme_overlap_start_idx, word2_grapheme_overlap_end_idx = word2.grapheme_to_arpabet_phoneme_alignment.subseq2_inds_to_subseq1_inds(word2_arpabet_overlap_start_idx, word2_arpabet_overlap_end_idx)
 				except:
 					rhyme, status, message = None, 1, 'word2 arpabet_phoneme could not be aligned with grapheme'
@@ -181,9 +172,6 @@ class Rhyme(object):
 		'''
 		subgrapheme_matches_tail = np.array([1 if subgrapheme == grapheme[-len(subgrapheme):] else 0 for grapheme in pronunciation_dictionary.grapheme_to_word_dict.iterkeys()])
 		subphoneme_matches_tail = np.array([1 if subphoneme == word.arpabet_phoneme[-len(subphoneme):] else 0 for word in pronunciation_dictionary.grapheme_to_word_dict.itervalues()])
-		# if subgrapheme in ('un','gry','gri','grie'):
-		# if subgrapheme in ('un','gry','gri','grie'):
-			# pdb.set_trace()
 		return 1.0 * (subgrapheme_matches_tail & subphoneme_matches_tail).sum() / len(pronunciation_dictionary.grapheme_to_word_dict)
 
 	@staticmethod

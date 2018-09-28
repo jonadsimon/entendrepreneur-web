@@ -4,9 +4,8 @@ from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 from portmanteau import Portmanteau
 from rhyme import Rhyme
-from global_constants import MAX_NEIGHBORS
+from global_constants import MAX_NEIGHBORS, NEAR_MISS_VOWELS, NEAR_MISS_CONSONANTS
 import io
-import pdb
 
 ###############################
 ### DEFINE HELPER FUNCTIONS ###

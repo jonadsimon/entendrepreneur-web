@@ -1,4 +1,3 @@
-from global_constants import PHONOLOGICAL_PHONE_TO_PHONOLOGICAL_FEATURE_DICT as p2v
 import numpy as np
 
 class Word(object):
@@ -19,11 +18,11 @@ class Word(object):
     def __init__(self, grapheme, arpabet_phoneme, vectorizable_phoneme, grapheme_to_arpabet_phoneme_alignment, arpabet_phoneme_to_vectorizable_phoneme_alignment):
         self.grapheme = grapheme
         self.arpabet_phoneme = arpabet_phoneme
-        self.vectorizable_phoneme = vectorizable_phoneme
+        self.vectorizable_phoneme = vectorizable_phoneme # ***THIS NEEDS TO BE SCRAPPED***
         self.grapheme_to_arpabet_phoneme_alignment = grapheme_to_arpabet_phoneme_alignment
-        self.arpabet_phoneme_to_vectorizable_phoneme_alignment = arpabet_phoneme_to_vectorizable_phoneme_alignment
+        self.arpabet_phoneme_to_vectorizable_phoneme_alignment = arpabet_phoneme_to_vectorizable_phoneme_alignment # ***THIS NEEDS TO BE SCRAPPED***
 
-    def feature_vectors(self):
+    def feature_vectors(self): # ***THIS NEEDS TO BE SCRAPPED***
         '''
         Return a num_phones x num_features numpy array giving the vectorized phoneme
         Don't store this explicitly due to the ~5x increased memory cost, it's much easier to compute on the fly
