@@ -150,10 +150,10 @@ def get_portmanteaus(words1_neighbors, words2_neighbors, grapheme_to_word_dict):
             if neighbor1.grapheme == neighbor2.grapheme:
                 continue
             # generate both orderings
-            portmanteau, status, message = Portmanteau.get_portmanteau(neighbor1, neighbor2, grapheme_to_word_dict)
+            portmanteau, status, message = Portmanteau.get_pun(neighbor1, neighbor2, grapheme_to_word_dict)
             if status == 0:
                 portmanteau_set.add(portmanteau)
-            portmanteau, status, message = Portmanteau.get_portmanteau(neighbor2, neighbor1, grapheme_to_word_dict)
+            portmanteau, status, message = Portmanteau.get_pun(neighbor2, neighbor1, grapheme_to_word_dict)
             if status == 0:
                 portmanteau_set.add(portmanteau)
     
@@ -174,7 +174,7 @@ def get_rhymes(words1_neighbors, words2_neighbors, grapheme_to_word_dict):
             if neighbor1.grapheme == neighbor2.grapheme:
                 continue
             # generate ONE ordering - if word order needs to be flipped for quality reasons, that's handled within the 'get_rhyme' function
-            rhyme, status, message = Rhyme.get_rhyme(neighbor1, neighbor2, grapheme_to_word_dict)
+            rhyme, status, message = Rhyme.get_pun(neighbor1, neighbor2, grapheme_to_word_dict)
             if status == 0:
                 rhyme_set.add(rhyme)
 
@@ -195,7 +195,7 @@ def get_portmanteau_inclusives(words1_neighbors, words2_neighbors, grapheme_to_w
             if neighbor1.grapheme == neighbor2.grapheme:
                 continue
             # generate ONE ordering - the shorter word always resides inside the longer word
-            portmanteau, status, message = PortmanteauInclusive.get_portmanteau_inclusive(neighbor1, neighbor2, grapheme_to_word_dict)
+            portmanteau, status, message = PortmanteauInclusive.get_pun(neighbor1, neighbor2, grapheme_to_word_dict)
             if status == 0:
                 portmanteau_set.add(portmanteau)
     

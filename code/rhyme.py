@@ -2,45 +2,13 @@ from global_constants import *
 from helper_utils import *
 import numpy as np
 from nltk.corpus import wordnet as wn
+from pun import Pun
 
-def phone_distance(phone1, phone2):
-    '''
-    identical pairs --> 0
-    unstressed / primary stress --> 1
-    near-match consonants --> 2
-    near-match vowels --> 4
-    non-matched  --> np.inf
-    '''
-    if phone1 == phone2:
-        return 0
-    elif filter(str.isalpha, phone1) == filter(str.isalpha, phone2):
-        # small penalty if identical BUT one has a primary stress and the other is nonstressed
-        if (phone1[-1], phone2[-1]) == ('0','1') or (phone1[-1], phone2[-1]) == ('1','0'):
-            return 1
-        # no penalty for secondary stress discrepancies
-        else:
-            return 0
-    elif (phone1,phone2) in NEAR_MISS_CONSONANTS or (phone2,phone1) in NEAR_MISS_CONSONANTS:
-        return 2
-    # make sure to strip off the (possibly nonexistent) before checking for set inclusion
-    # if the vowels don't match then the stresses DEFINITELY need to match
-    # TODO: handle this via some sort of custom lookup function
-    elif ((phone1[:-1],phone2[:-1]) in NEAR_MISS_VOWELS or (phone2[:-1],phone1[:-1]) in NEAR_MISS_VOWELS) and phone1[-1] == phone2[-1]:
-        return 4
-    else:
-        return np.inf
-
-def phoneme_distance(phoneme1, phoneme2):
-    '''
-    Don't use fancy hand-coded rules, keep the same distance logic, just swap in the new metric
-    '''
-    return sum([phone_distance(str(p1),str(p2)) for (p1,p2) in zip(phoneme1, phoneme2)])
-
-class Rhyme(object):
+class Rhyme(Pun):
 	min_overlap_vowel_phones = 1
 	min_overlap_consonant_phones = 1
-	min_overlap_phones = 2 # TBD
-	max_overlap_dist = 4 # TBD
+	min_overlap_phones = 2
+	max_overlap_dist = 4
 
 	def __init__(self,
 							word1,
@@ -61,7 +29,7 @@ class Rhyme(object):
 		self.prob_given_subphoneme_and_grapheme_length = prob_given_subphoneme_and_grapheme_length
 
 	@classmethod
-	def get_rhyme(cls, word1, word2, pronunciation_dictionary):
+	def get_pun(cls, word1, word2, pronunciation_dictionary):
 		'''
 		Attempts to create a Rhyme out of the two words
 		If successful, returns the Rhyme
@@ -80,7 +48,7 @@ class Rhyme(object):
 			word2_arpabet_overlap = word2.arpabet_phoneme[-overlap_len:]
 			word1_arpabet_nonoverlap = word1.arpabet_phoneme[:-overlap_len]
 			word2_arpabet_nonoverlap = word2.arpabet_phoneme[:-overlap_len]
-			overlap_distance = phoneme_distance(word1_arpabet_overlap, word2_arpabet_overlap)
+			overlap_distance = cls.get_phoneme_distance(word1_arpabet_overlap, word2_arpabet_overlap)
 			if overlap_distance <= cls.max_overlap_dist:
 				# scrap the vectorizable phoneme mapping step, operate solely on the arpabet phoneme
 				
@@ -150,6 +118,7 @@ class Rhyme(object):
 		# failed to find any overlaps meeting the 'max_overlap_dist' criteria, so return with default error message
 		return rhyme, status, message
 
+	# Keep these intact for now... unclear if this function can be/need be generalized to 'Pun'
 	@staticmethod
 	def get_prob_word_given_subphoneme_and_grapheme_length(grapheme, subphoneme, pronunciation_dictionary):
 		'''
@@ -160,16 +129,6 @@ class Rhyme(object):
 		'''
 		subphoneme_matches = [1 if subphoneme == word.arpabet_phoneme[-len(subphoneme):] and len(word.grapheme) <= len(grapheme) else 0 for word in pronunciation_dictionary.grapheme_to_word_dict.itervalues()]
 		return 1.0 / sum(subphoneme_matches)
-
-	@staticmethod
-	def get_grapheme_phoneme_prob(subgrapheme, subphoneme, pronunciation_dictionary):
-		'''
-		How common is it for this particular graphic+phonetic element to occur at the start of end of a word?
-		If it's extremely common, then it's probably a (garbage) common prefix/suffix
-		'''
-		subgrapheme_matches_tail = np.array([1 if subgrapheme == grapheme[-len(subgrapheme):] else 0 for grapheme in pronunciation_dictionary.grapheme_to_word_dict.iterkeys()])
-		subphoneme_matches_tail = np.array([1 if subphoneme == word.arpabet_phoneme[-len(subphoneme):] else 0 for word in pronunciation_dictionary.grapheme_to_word_dict.itervalues()])
-		return 1.0 * (subgrapheme_matches_tail & subphoneme_matches_tail).sum() / len(pronunciation_dictionary.grapheme_to_word_dict)
 
 	@staticmethod
 	def get_word_ordering(word1, word2, num_non_overlap_phones1, num_non_overlap_phones2):
