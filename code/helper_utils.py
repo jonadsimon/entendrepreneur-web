@@ -4,6 +4,7 @@ from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 from portmanteau import Portmanteau
 from rhyme import Rhyme
+from portmanteau_inclusive import PortmanteauInclusive
 from global_constants import MAX_NEIGHBORS, NEAR_MISS_VOWELS, NEAR_MISS_CONSONANTS
 import io
 
@@ -172,7 +173,7 @@ def get_rhymes(words1_neighbors, words2_neighbors, grapheme_to_word_dict):
             # if the words are identical, as sometimes happens, skip it
             if neighbor1.grapheme == neighbor2.grapheme:
                 continue
-            # generate ONE orderings - if word order needs to be flipped for quality reasons, that's handled within the 'get_rhyme' function
+            # generate ONE ordering - if word order needs to be flipped for quality reasons, that's handled within the 'get_rhyme' function
             rhyme, status, message = Rhyme.get_rhyme(neighbor1, neighbor2, grapheme_to_word_dict)
             if status == 0:
                 rhyme_set.add(rhyme)
@@ -183,3 +184,24 @@ def get_rhymes(words1_neighbors, words2_neighbors, grapheme_to_word_dict):
     rhyme_list.sort(key=lambda x: x.ordering_criterion())
 
     return rhyme_list
+
+
+def get_portmanteau_inclusives(words1_neighbors, words2_neighbors, grapheme_to_word_dict):
+    # use a set to avoid redundancy in case the same word appears in both sets
+    portmanteau_set = set()
+    for neighbor1 in words1_neighbors:
+        for neighbor2 in words2_neighbors:
+            # if the words are identical, as sometimes happens, skip it
+            if neighbor1.grapheme == neighbor2.grapheme:
+                continue
+            # generate ONE ordering - the shorter word always resides inside the longer word
+            portmanteau, status, message = PortmanteauInclusive.get_portmanteau_inclusive(neighbor1, neighbor2, grapheme_to_word_dict)
+            if status == 0:
+                portmanteau_set.add(portmanteau)
+    
+    portmanteau_list = list(portmanteau_set)
+
+    # Order according to quality
+    portmanteau_list.sort(key=lambda x: x.ordering_criterion())
+
+    return portmanteau_list

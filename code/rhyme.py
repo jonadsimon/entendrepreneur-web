@@ -103,9 +103,6 @@ class Rhyme(object):
 				elif num_overlap_phones1 < cls.min_overlap_phones:
 					rhyme, status, message = None, 1, 'arpabet overlap does not have enough phones'
 					continue
-				elif first_overlap_phone1 not in ARPABET_VOWELS:
-					rhyme, status, message = None, 1, 'arpabet overlap does not start with a vowel phone'
-					continue
 
 				word1_arpabet_overlap_start_idx, word1_arpabet_overlap_end_idx = len(word1.arpabet_phoneme) - overlap_len, len(word1.arpabet_phoneme) - 1
 				word2_arpabet_overlap_start_idx, word2_arpabet_overlap_end_idx = len(word2.arpabet_phoneme) - overlap_len, len(word2.arpabet_phoneme) - 1

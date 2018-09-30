@@ -54,6 +54,7 @@ if __name__ == '__main__':
 
         portmanteaus = get_portmanteaus(nearest_words1, nearest_words2, grapheme_to_word_dict)
         rhymes = get_rhymes(nearest_words1, nearest_words2, grapheme_to_word_dict)
+        portmanteau_inclusives = get_portmanteau_inclusives(nearest_words1, nearest_words2, grapheme_to_word_dict)
 
         print '''
         ########################
@@ -80,6 +81,19 @@ if __name__ == '__main__':
                 print repr(rhyme)
             else:
                 print rhyme
+
+        print '''
+        ####################################
+        ##### PORTMANTEAUS (INCLUSIVE) #####
+        ####################################
+        '''
+        for i, portmanteau_inclusive in enumerate(portmanteau_inclusives):
+            if i >= MAX_PORTMANTEAU_INCLUSIVES:
+                break
+            if options['debug']:
+                print repr(portmanteau_inclusive)
+            else:
+                print portmanteau_inclusive
 
         # if it's a test run, we only want to run the while-loop once
         if options['test']:

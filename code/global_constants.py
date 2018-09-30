@@ -16,14 +16,17 @@ ARPABET_RHOTICS = set(['ER'])
 
 MAX_PORTMANTEAUS = 10
 MAX_RHYMES = 10
+MAX_PORTMANTEAU_INCLUSIVES = 10
 MAX_NEIGHBORS = 100
 MAX_VOCAB = 300000
 FAST_VOCAB = 20000
 # TEST_INPUT = 'labrador dormitory'
 # TEST_INPUT = 'glitter literati'
-TEST_INPUT = 'rosemary marriott'
+# TEST_INPUT = 'rosemary marriott'
 # TEST_INPUT = 'sprocket locket' ### NEW DISTANCE MEASURE DOES NOT MATCH 'AH0'/'IH0'
 # TEST_INPUT = 'master blaster'
+TEST_INPUT = 'sigh seismologist'
+# TEST_INPUT = 'programmer bro'
 
 REPO_HOME = '/Users/jonathansimon/code/what-do-you-call-a-bot/'
 
