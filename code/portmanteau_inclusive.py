@@ -32,7 +32,7 @@ class PortmanteauInclusive(Pun):
 		self.overlap_grapheme_phoneme_prob = overlap_grapheme_phoneme_prob
 
 	@classmethod
-	def get_pun(cls, word1, word2, pronunciation_dictionary):
+	def get_pun(cls, word1, word2, subword_frequency):
 		'''
 		Attempts to create a Portmanteau out of the two words
 		If successful, returns the Portmanteau
@@ -102,8 +102,8 @@ class PortmanteauInclusive(Pun):
 				else:
 					word_long_grapheme_nonoverlap2 = ''.join(word_long.grapheme_to_arpabet_phoneme_alignment.subseq2_to_subseq1(arpabet_start_idx + len(word_short.arpabet_phoneme), len(word_long.arpabet_phoneme) - 1))
 
-				word_long_prob_given_nonoverlap_graphs1 = cls.get_prob_word_given_subgrapheme(word_long_grapheme_nonoverlap1, 'head', pronunciation_dictionary)
-				word_long_prob_given_nonoverlap_graphs2 = cls.get_prob_word_given_subgrapheme(word_long_grapheme_nonoverlap2, 'tail', pronunciation_dictionary)
+				word_long_prob_given_nonoverlap_graphs1 = cls.get_prob_word_given_subgrapheme(word_long_grapheme_nonoverlap1, 'head', subword_frequency)
+				word_long_prob_given_nonoverlap_graphs2 = cls.get_prob_word_given_subgrapheme(word_long_grapheme_nonoverlap2, 'tail', subword_frequency)
 				word_long_prob_given_nonoverlap_graphs = max(word_long_prob_given_nonoverlap_graphs1, word_long_prob_given_nonoverlap_graphs2)
 
 				grapheme_portmanteau = word_long_grapheme_nonoverlap1 + word_short.grapheme + word_long_grapheme_nonoverlap2
@@ -111,8 +111,8 @@ class PortmanteauInclusive(Pun):
 
 				# probability of a phoneme occurring with a particular occompanying grapheme is inversely proportional to the pun's quality; same is true for rhymes
 				# basically, this is a roundabout way of identifying/discarding common prefixes/suffixes (commonly occurring graph/phone combinations at the start/end of words)
-				word_short_overlap_grapheme_phoneme_prob = cls.get_grapheme_phoneme_prob(word_short.grapheme, word_short.arpabet_phoneme, pronunciation_dictionary)
-				word_long_overlap_grapheme_phoneme_prob = cls.get_grapheme_phoneme_prob(word_long.grapheme[word_long_grapheme_overlap_start_idx:word_long_grapheme_overlap_end_idx+1], word_long_arpabet_overlap, pronunciation_dictionary)
+				word_short_overlap_grapheme_phoneme_prob = cls.get_grapheme_phoneme_prob(word_short.grapheme, tuple(word_short.arpabet_phoneme), subword_frequency)
+				word_long_overlap_grapheme_phoneme_prob = cls.get_grapheme_phoneme_prob(word_long.grapheme[word_long_grapheme_overlap_start_idx:word_long_grapheme_overlap_end_idx+1], tuple(word_long_arpabet_overlap), subword_frequency)
 				overlap_grapheme_phoneme_prob = max(word_short_overlap_grapheme_phoneme_prob, word_long_overlap_grapheme_phoneme_prob)
 
 				portmanteau = cls(

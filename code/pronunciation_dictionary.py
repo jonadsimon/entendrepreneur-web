@@ -27,4 +27,4 @@ class PronunciationDictionary(object):
 		Load a saved object from a file
 		'''
 		with open(filename, 'rb') as infile:
-			return pkl.load(infile)
+			return pkl.load(infile)	

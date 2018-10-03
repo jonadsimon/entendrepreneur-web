@@ -81,10 +81,10 @@ def flatten(l):
     return [item for sublist in l for item in sublist]
 
 
-def get_fastvec_neighbors(grapheme, fastvec_model):
+def get_fastvec_neighbors(grapheme, fasttext_model):
     for g in alternative_grapheme_capitalizations(grapheme):
-        if g in fastvec_model.vocab:
-            return list(zip(*fastvec_model.most_similar(positive=[g], topn=MAX_NEIGHBORS))[0])
+        if g in fasttext_model.vocab:
+            return list(zip(*fasttext_model.most_similar(positive=[g], topn=MAX_NEIGHBORS))[0])
     else:
         raise 'This code path should NEVER execute, something has gone HORRIBLY wrong'
 
@@ -122,9 +122,9 @@ def get_shortest_lemma(grapheme, lemmatizer=WordNetLemmatizer(), stemmer=PorterS
     return shortest_lemma
 
 
-def get_semantic_neighbor_graphemes(grapheme, fastvec_model):
-    # DO NOT like how this 'fastvec_model' parameter is being passed through
-    fastvec_neighbors = get_fastvec_neighbors(grapheme, fastvec_model)
+def get_semantic_neighbor_graphemes(grapheme, fasttext_model):
+    # DO NOT like how this 'fasttext_model' parameter is being passed through
+    fastvec_neighbors = get_fastvec_neighbors(grapheme, fasttext_model)
 
     # fastvec sometimes returns funky unicode characters like umlouts, so make sure to catch/discard these before moving on
     fastvec_neighbors_clean = [grapheme]
@@ -141,7 +141,7 @@ def get_semantic_neighbor_graphemes(grapheme, fastvec_model):
     return semantic_neighbor_graphemes
 
 
-def get_portmanteaus(words1_neighbors, words2_neighbors, grapheme_to_word_dict):
+def get_portmanteaus(words1_neighbors, words2_neighbors, subword_frequency):
     # use a set to avoid redundancy in case the same word appears in both sets
     portmanteau_set = set()
     for neighbor1 in words1_neighbors:
@@ -150,10 +150,10 @@ def get_portmanteaus(words1_neighbors, words2_neighbors, grapheme_to_word_dict):
             if neighbor1.grapheme == neighbor2.grapheme:
                 continue
             # generate both orderings
-            portmanteau, status, message = Portmanteau.get_pun(neighbor1, neighbor2, grapheme_to_word_dict)
+            portmanteau, status, message = Portmanteau.get_pun(neighbor1, neighbor2, subword_frequency)
             if status == 0:
                 portmanteau_set.add(portmanteau)
-            portmanteau, status, message = Portmanteau.get_pun(neighbor2, neighbor1, grapheme_to_word_dict)
+            portmanteau, status, message = Portmanteau.get_pun(neighbor2, neighbor1, subword_frequency)
             if status == 0:
                 portmanteau_set.add(portmanteau)
     
@@ -165,7 +165,7 @@ def get_portmanteaus(words1_neighbors, words2_neighbors, grapheme_to_word_dict):
     return portmanteau_list
 
 
-def get_rhymes(words1_neighbors, words2_neighbors, grapheme_to_word_dict):
+def get_rhymes(words1_neighbors, words2_neighbors, subword_frequency):
     # use a set to avoid redundancy in case the same word appears in both sets
     rhyme_set = set()
     for neighbor1 in words1_neighbors:
@@ -174,7 +174,7 @@ def get_rhymes(words1_neighbors, words2_neighbors, grapheme_to_word_dict):
             if neighbor1.grapheme == neighbor2.grapheme:
                 continue
             # generate ONE ordering - if word order needs to be flipped for quality reasons, that's handled within the 'get_rhyme' function
-            rhyme, status, message = Rhyme.get_pun(neighbor1, neighbor2, grapheme_to_word_dict)
+            rhyme, status, message = Rhyme.get_pun(neighbor1, neighbor2, subword_frequency)
             if status == 0:
                 rhyme_set.add(rhyme)
 
@@ -186,7 +186,7 @@ def get_rhymes(words1_neighbors, words2_neighbors, grapheme_to_word_dict):
     return rhyme_list
 
 
-def get_portmanteau_inclusives(words1_neighbors, words2_neighbors, grapheme_to_word_dict):
+def get_portmanteau_inclusives(words1_neighbors, words2_neighbors, subword_frequency):
     # use a set to avoid redundancy in case the same word appears in both sets
     portmanteau_set = set()
     for neighbor1 in words1_neighbors:
@@ -195,7 +195,7 @@ def get_portmanteau_inclusives(words1_neighbors, words2_neighbors, grapheme_to_w
             if neighbor1.grapheme == neighbor2.grapheme:
                 continue
             # generate ONE ordering - the shorter word always resides inside the longer word
-            portmanteau, status, message = PortmanteauInclusive.get_pun(neighbor1, neighbor2, grapheme_to_word_dict)
+            portmanteau, status, message = PortmanteauInclusive.get_pun(neighbor1, neighbor2, subword_frequency)
             if status == 0:
                 portmanteau_set.add(portmanteau)
     

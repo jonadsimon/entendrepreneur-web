@@ -13,59 +13,30 @@ class Pun(object):
 	# Try *all* internal matches, so reason to restrict ourselves
 	
 	@classmethod
-	def get_pun(cls, word1, word2, pronunciation_dictionary):
+	def get_pun(cls, word1, word2, subword_frequency):
 		pass
 
 	@staticmethod
-	def get_prob_word_given_subgrapheme(subgrapheme, side, pronunciation_dictionary):
+	def get_prob_word_given_subgrapheme(subgrapheme, side, subword_frequency):
 		'''
-		Given that we know a grapheme contains a certain substring at a certain position, what is the probability that we can guess the grapheme?
-
-		Need to have access to the PronounciationDictionary... how to do it?
-
-		This _may_ be prohibitively innefficient to run every time... not sure
-
-		Should be called with *dangling* grapheme substring
-
-		As always, indices are inclusive, so add 1 to end_idx
-
-		side = 'head' or 'tail'
+		TOTALLY redundant with function in SubwordFrequency
 		'''
-		if side == 'head':
-			subgraph_matches = [1 if subgrapheme == grapheme[:len(subgrapheme)] else 0 for grapheme in pronunciation_dictionary.grapheme_to_word_dict.iterkeys()]
-		elif side == 'tail':
-			# need to explicitly add 'len(grapheme)' to the negative-indexing to handle 0-cases
-			subgraph_matches = [1 if subgrapheme == grapheme[len(grapheme)-len(subgrapheme):] else 0 for grapheme in pronunciation_dictionary.grapheme_to_word_dict.iterkeys()]
-		else:
-			raise "Argument 'side' must be either 'head' or 'tail'"
-		
-		return 1.0 / sum(subgraph_matches)
+		return 1.0 / subword_frequency.get_subgrapheme_frequency(subgrapheme, side)
 
 
 	@staticmethod
-	def get_prob_word_given_subphoneme_and_grapheme_length(grapheme, subphoneme, pronunciation_dictionary):
+	def get_prob_word_given_tail_subphoneme(subphoneme, subword_frequency):
 		'''
-		For all words whose graphemes are as-short-or-shorter than this word, how many of them end in this phoneme?
-		Need to condition on word length so that short words whose phonemes comprise a large % of the word (even if they're common) aren't penalized
-
-		# Need to think more about this one...
+		TOTALLY redundant with function in SubwordFrequency
 		'''
-		subphoneme_matches = [1 if subphoneme == word.arpabet_phoneme[-len(subphoneme):] and len(word.grapheme) <= len(grapheme) else 0 for word in pronunciation_dictionary.grapheme_to_word_dict.itervalues()]
-		return 1.0 / sum(subphoneme_matches)
+		return 1.0 / subword_frequency.get_subphoneme_frequency(subphoneme, 'tail')
 
 	@staticmethod
-	def get_grapheme_phoneme_prob(subgrapheme, subphoneme, pronunciation_dictionary):
+	def get_grapheme_phoneme_prob(subgrapheme, subphoneme, subword_frequency):
 		'''
-		How common is it for this particular graphic+phonetic element to occur at the start of end of a word?
-		If it's extremely common, then it's probably a (garbage) common prefix/suffix
+		TOTALLY redundant with function in SubwordFrequency
 		'''
-		subgrapheme_matches_head = np.array([1 if subgrapheme == grapheme[:len(subgrapheme)] else 0 for grapheme in pronunciation_dictionary.grapheme_to_word_dict.iterkeys()])
-		# need to explicitly add 'len(grapheme)' to the negative-indexing to handle 0-cases
-		subgrapheme_matches_tail = np.array([1 if subgrapheme == grapheme[len(grapheme)-len(subgrapheme):] else 0 for grapheme in pronunciation_dictionary.grapheme_to_word_dict.iterkeys()])
-		subphoneme_matches_head = np.array([1 if subphoneme == word.arpabet_phoneme[:len(subphoneme)] else 0 for word in pronunciation_dictionary.grapheme_to_word_dict.itervalues()])
-		# need to explicitly add 'len(word.arpabet_phoneme)' to the negative-indexing to handle 0-cases
-		subphoneme_matches_tail = np.array([1 if subphoneme == word.arpabet_phoneme[len(word.arpabet_phoneme)-len(subphoneme):] else 0 for word in pronunciation_dictionary.grapheme_to_word_dict.itervalues()])
-		return 1.0 * ((subgrapheme_matches_head & subphoneme_matches_head) | (subgrapheme_matches_tail & subphoneme_matches_tail)).sum() / len(pronunciation_dictionary.grapheme_to_word_dict)
+		return 1.0 * subword_frequency.get_subword_frequency(subgrapheme, subphoneme) / subword_frequency.vocab_size
 
 	@staticmethod
 	def get_phone_distance(phone1, phone2):
