@@ -1,12 +1,6 @@
-from collections import defaultdict
-
 ########################
 ### GLOBAL CONSTANTS ###
 ########################
-
-# Might be better off just hard-coding phonetically similar phones...
-# in additional to total distance, add additional normalize cutoff
-# i.e. <= 4 overall, and <2 normalized
 
 ARPABET_VOWELS = set(['AA', 'AE', 'AH', 'AO', 'AW', 'AX', 'AXR', 'AY', 'EH', 'ER', 'EY', 'IH', 'IX', 'IY', 'OW', 'OY', 'UH', 'UW', 'UX'])
 ARPABET_CONSONANTS = set(['B', 'CH', 'D', 'DH', 'DX', 'EL', 'EM', 'EN', 'F', 'G', 'H', 'HH', 'JH', 'K', 'L', 'M', 'N', 'NG', 'NX', 'P', 'Q', 'R', 'S', 'SH', 'T', 'TH', 'V', 'W', 'WH', 'Y', 'Z', 'ZH'])
@@ -18,14 +12,8 @@ MAX_PORTMANTEAUS = 30
 MAX_RHYMES = 30
 MAX_NEIGHBORS = 100
 MAX_VOCAB = 300000
-FAST_VOCAB = 20000
-# TEST_INPUT = 'labrador dormitory'
-TEST_INPUT = 'glitter literati'
 # TEST_INPUT = 'rosemary marriott'
-# TEST_INPUT = 'sprocket locket' ### NEW DISTANCE MEASURE DOES NOT MATCH 'AH0'/'IH0'
-# TEST_INPUT = 'master blaster'
-# TEST_INPUT = 'sigh seismologist' ### CAN'T MATCH AFTER REMOVING PortmanteauInternal CLASS
-# TEST_INPUT = 'programmer bro' ### CAN'T MATCH AFTER REMOVING PortmanteauInternal CLASS
+TEST_INPUT = 'master blaster'
 
 REPO_HOME = '/Users/jonathansimon/code/what-do-you-call-a-bot/'
 

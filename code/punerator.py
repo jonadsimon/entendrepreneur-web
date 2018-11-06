@@ -8,13 +8,6 @@ from pronunciation_dictionary import PronunciationDictionary
 from subword_frequency import SubwordFrequency
 from time import time
 
-# Steps:
-# 0. Accept inputs
-# 1. Map to nearest neighbors (catch errors/make suggestions)
-# 2. Map to phonemes/words
-# 3. n^2 search to identify portmanteaus and rhymes
-# 4. print results
-
 if __name__ == '__main__':
 
     options = parse_options(sys.argv)
@@ -22,11 +15,8 @@ if __name__ == '__main__':
     start = time()
     if not options['test']:
         # Load Facebook's pre-trained FastVec model
-        if not options['fast']:
-            fasttext_model = gensim.models.KeyedVectors.load_word2vec_format(REPO_HOME+'data/wiki-news-300d-1M.vec', limit=MAX_VOCAB)
-        else:
-            # restrict to a small subset of the overall vector set
-            fasttext_model = gensim.models.KeyedVectors.load_word2vec_format(REPO_HOME+'data/wiki-news-300d-1M.vec', limit=FAST_VOCAB)
+        fasttext_model = gensim.models.KeyedVectors.load_word2vec_format(REPO_HOME+'data/word_vectors/wiki-news-300d-1M.vec', limit=MAX_VOCAB)
+            
     print 'FastText loading: {:.2f}sec'.format(time()-start)
 
     # Load PronunciationDictionary' constructed by augmenting the CMUdict phonetic dictionary (nltk.corpus.cmudict.dict())
@@ -63,7 +53,6 @@ if __name__ == '__main__':
 
         else:
             grapheme1, grapheme2 = parse_input(TEST_INPUT)
-            # !!! NEED TO SPECIAL-CASE THIS SITUATION, OR ELSE REDEFINE "TEST" TO MEAN "FAST"
             nearest_words1 = [grapheme_to_word_dict.get_word(grapheme1)]
             nearest_words2 = [grapheme_to_word_dict.get_word(grapheme2)]
 

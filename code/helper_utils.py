@@ -144,9 +144,6 @@ def get_semantic_neighbor_graphemes(grapheme, fasttext_model):
     wnl = WordNetLemmatizer()
     semantic_neighbor_graphemes = map(lambda g: get_shortest_lemma(g.lower(), wnl), fastvec_neighbors_clean)
 
-    # Discard any words bginning with the 'un' prefix
-    # semantic_neighbor_graphemes = filter(lambda g: not has_un_prefix(g), semantic_neighbor_graphemes)    
-    
     # Remove duplicates
     semantic_neighbor_graphemes = set(semantic_neighbor_graphemes)
 

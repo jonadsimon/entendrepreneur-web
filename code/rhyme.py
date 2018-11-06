@@ -18,16 +18,14 @@ class Rhyme(Pun):
 							n_overlapping_consonant_phones,
 							n_overlapping_phones,
 							overlap_distance,
-							overlap_grapheme_phoneme_prob,
-							word_prob_given_tail_phoneme):
+							overlap_phoneme_prob):
 		self.word1 = word1
 		self.word2 = word2
 		self.n_overlapping_vowel_phones = n_overlapping_vowel_phones
 		self.n_overlapping_consonant_phones = n_overlapping_consonant_phones
 		self.n_overlapping_phones = n_overlapping_phones
 		self.overlap_distance = overlap_distance
-		self.overlap_grapheme_phoneme_prob = overlap_grapheme_phoneme_prob
-		self.word_prob_given_tail_phoneme = word_prob_given_tail_phoneme
+		self.overlap_phoneme_prob = overlap_phoneme_prob
 
 	@classmethod
 	def get_pun(cls, word1, word2, subword_frequency):
@@ -72,6 +70,9 @@ class Rhyme(Pun):
 				elif num_overlap_phones1 < cls.min_overlap_phones:
 					rhyme, status, message = None, 1, 'arpabet overlap does not have enough phones'
 					continue
+				elif first_overlap_phone1 not in ARPABET_VOWELS:
+					rhyme, status, message = None, 1, 'arpabet overlap does not start with a vowel phone'
+					continue
 
 				word1_arpabet_overlap_start_idx, word1_arpabet_overlap_end_idx = len(word1.arpabet_phoneme) - overlap_len, len(word1.arpabet_phoneme) - 1
 				word2_arpabet_overlap_start_idx, word2_arpabet_overlap_end_idx = len(word2.arpabet_phoneme) - overlap_len, len(word2.arpabet_phoneme) - 1
@@ -89,17 +90,9 @@ class Rhyme(Pun):
 
 				# All alignments and min-char requirements have been met, so create the Portmanteau, and return
 
-				# probability of a phoneme occurring with a particular occompanying grapheme is inversely proportional to the pun's quality; same is true for rhymes
-				# basically, this is a roundabout way of identifying/discarding common prefixes/suffixes (commonly occurring graph/phone combinations at the start/end of words)
-
-				word1_overlap_grapheme_phoneme_prob = cls.get_grapheme_phoneme_prob(word1.grapheme[word1_grapheme_overlap_start_idx:word1_grapheme_overlap_end_idx+1], tuple(word1_arpabet_overlap), subword_frequency)
-				word2_overlap_grapheme_phoneme_prob = cls.get_grapheme_phoneme_prob(word2.grapheme[word2_grapheme_overlap_start_idx:word2_grapheme_overlap_end_idx+1], tuple(word2_arpabet_overlap), subword_frequency)
-				overlap_grapheme_phoneme_prob = max(word1_overlap_grapheme_phoneme_prob, word2_overlap_grapheme_phoneme_prob)
-
-				# Need to think more about this one...
-				word1_prob_given_tail_phoneme = cls.get_prob_word_given_tail_subphoneme(tuple(word1_arpabet_overlap), subword_frequency)
-				word2_prob_given_tail_phoneme = cls.get_prob_word_given_tail_subphoneme(tuple(word2_arpabet_overlap), subword_frequency)			
-				word_prob_given_tail_phoneme = min(word1_prob_given_tail_phoneme, word2_prob_given_tail_phoneme)
+				word1_tail_phoneme_prob = cls.get_tail_phoneme_prob(tuple(word1_arpabet_overlap), subword_frequency)
+				word2_tail_phoneme_prob = cls.get_tail_phoneme_prob(tuple(word2_arpabet_overlap), subword_frequency)
+				overlap_phoneme_prob = word1_tail_phoneme_prob * word2_tail_phoneme_prob
 
 				# Use POS + grapheme_length ordering rules to decide which word to put first
 				word1_ordered, word2_ordered = cls.get_word_ordering(word1, word2, num_non_overlap_phones1, num_non_overlap_phones2)
@@ -112,8 +105,7 @@ class Rhyme(Pun):
 					num_overlap_consonant_phones1,
 					num_overlap_vowel_phones1+num_overlap_consonant_phones1,
 					overlap_distance,
-					overlap_grapheme_phoneme_prob,
-					word_prob_given_tail_phoneme
+					overlap_phoneme_prob
 					)
 				return rhyme, 0, 'rhyme found!'
 
@@ -151,34 +143,22 @@ class Rhyme(Pun):
 		-------------------------------------------------------------------------------
 		# Grapheme Pair: {} {}
 		# Phoneme Pair: {} {}
-		# Phoneme Distance: {}
-		# Grapheme+Phoneme Probability: {}
-		# Grapheme+Phoneme Log-Probability: {}
-		# Word|Phoneme Probability: {}
-		# Word|Phoneme Log-Probability: {}
 		# Overlapping Phones: {}
-		# Overlapping Vowel Phones: {}
-		# Overlapping Consonant Phones: {}
+		# Phoneme Distance: {}
+		# Phoneme Probability: {:.2e}
 		-------------------------------------------------------------------------------
 		'''.format(self.word1.grapheme,
 			self.word2.grapheme,
 			'-'.join(self.word1.arpabet_phoneme), # represented internally as a list, so collapse the list to a string
 			'-'.join(self.word2.arpabet_phoneme), # represented internally as a list, so collapse the list to a string
-			self.overlap_distance,
-			round(self.overlap_grapheme_phoneme_prob, 5),
-			round(np.log(self.overlap_grapheme_phoneme_prob), 2),
-			round(self.word_prob_given_tail_phoneme, 5),
-			round(np.log(self.word_prob_given_tail_phoneme), 2),
 			self.n_overlapping_phones,
-			self.n_overlapping_vowel_phones,
-			self.n_overlapping_consonant_phones)
+			self.overlap_distance,
+			self.overlap_phoneme_prob
+			)
 
 	def __str__(self):
 		return '{} {}'.format(self.word1.grapheme, self.word2.grapheme)
 
 	def ordering_criterion(self):
 		'''Smaller values are "better" portmanteaus'''
-		return (self.overlap_distance, -self.word_prob_given_tail_phoneme, -self.n_overlapping_phones)
-		# return (-self.n_overlapping_phones, self.overlap_distance, self.overlap_grapheme_phoneme_prob)
-		# return (-self.n_overlapping_phones, self.overlap_grapheme_phoneme_prob)
-		# return (self.overlap_grapheme_phoneme_prob, -self.n_overlapping_phones, -self.n_overlapping_vowel_phones, self.overlap_distance)
+		return (self.overlap_distance, self.overlap_phoneme_prob)
