@@ -43,3 +43,5 @@ Hardcode phoneme distance rules
 Swap in facebook word vectors (fastvec)
 Facebok word vectors are trained on wikipedia, so cature different information
 Might want to add it in as yet-another source of word information, same as Wordnet
+
+Lists of first+last names: https://stackoverflow.com/questions/1803628/raw-list-of-person-names

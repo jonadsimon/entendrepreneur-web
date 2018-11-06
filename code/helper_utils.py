@@ -120,6 +120,12 @@ def get_shortest_lemma(grapheme, lemmatizer=WordNetLemmatizer(), stemmer=PorterS
 
     return shortest_lemma
 
+def has_un_prefix(grapheme):
+    # begins with 'un' and remains a valid word after 'un' is removed
+    if grapheme[:2] == 'un' and len(wn.synsets(grapheme[2:])) >= 1:
+        return True
+    else:
+        return False
 
 def get_semantic_neighbor_graphemes(grapheme, fasttext_model):
     # DO NOT like how this 'fasttext_model' parameter is being passed through
@@ -136,7 +142,14 @@ def get_semantic_neighbor_graphemes(grapheme, fasttext_model):
     # Keep it simple to start: Downcase --> Lemmatize --> Set
     # Make sure to consider the lemmas for ALL possible synsets of a given word, and pick the shortest
     wnl = WordNetLemmatizer()
-    semantic_neighbor_graphemes = set(map(lambda g: get_shortest_lemma(g.lower(), wnl), fastvec_neighbors_clean))
+    semantic_neighbor_graphemes = map(lambda g: get_shortest_lemma(g.lower(), wnl), fastvec_neighbors_clean)
+
+    # Discard any words bginning with the 'un' prefix
+    # semantic_neighbor_graphemes = filter(lambda g: not has_un_prefix(g), semantic_neighbor_graphemes)    
+    
+    # Remove duplicates
+    semantic_neighbor_graphemes = set(semantic_neighbor_graphemes)
+
     return semantic_neighbor_graphemes
 
 

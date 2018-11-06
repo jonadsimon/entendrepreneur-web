@@ -1,0 +1,46 @@
+Online Pun-generators:
+
+inclusive puns (w/ multiword) - TERRIBLE
+https://github.com/Turnsole/Punerator
+
+rhymes (single word) - TERRIBLE
+https://pungenerator.org
+
+pun phrase finder - TERRIBLE
+https://puns.samueltaylor.org
+
+portmanteaus - TERRIBLE
+http://portmanteaur.com
+
+portmanteaus - TERRIBLE
+https://www.dcode.fr/word-contraction-generator
+
+single-word portmanteaus - GOOD
+https://www.degraeve.com/invent-a-word/
+
+single-word portmanteaus - TERRIBLE
+http://werdmerge.com
+
+portmanteaus - GOOD
+https://www.onelook.com/pm/ <-- background
+
+Papers:
+
+CharManteau: Character Embedding Models For Portmanteau Creation (2017)
+https://arxiv.org/abs/1707.01176
+https://github.com/vgtomahawk/Charmanteau-CamReady/
+
+How to Make a Frenemy: Multitape FSTs for Portmanteau Generation (2015)
+http://www.aclweb.org/anthology/N15-1021
+
+Automated Pun Generator (2017)
+https://www.researchgate.net/publication/317060091_Automated_Pun_Generator
+
+Machine humour: An implemented model of puns (????)
+http://www2.hawaii.edu/~binsted/papers/Binstedthesis.pdf
+
+
+Data:
+
+1/3 million most common english words (count_1w.txt)
+http://norvig.com/ngrams/

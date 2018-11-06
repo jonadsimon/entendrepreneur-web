@@ -39,6 +39,34 @@ class Pun(object):
 		return 1.0 * subword_frequency.get_subword_frequency(subgrapheme, subphoneme) / subword_frequency.vocab_size
 
 	@staticmethod
+	def get_head_grapheme_phoneme_prob(subgrapheme, subphoneme, subword_frequency):
+		'''
+		TOTALLY redundant with function in SubwordFrequency
+		'''
+		return 1.0 * subword_frequency.get_subword_frequency(subgrapheme, subphoneme, 'head') / subword_frequency.vocab_size
+
+	@staticmethod
+	def get_tail_grapheme_phoneme_prob(subgrapheme, subphoneme, subword_frequency):
+		'''
+		TOTALLY redundant with function in SubwordFrequency
+		'''
+		return 1.0 * subword_frequency.get_subword_frequency(subgrapheme, subphoneme, 'tail') / subword_frequency.vocab_size
+
+	@staticmethod
+	def get_head_phoneme_prob(subphoneme, subword_frequency):
+		'''
+		TOTALLY redundant with function in SubwordFrequency
+		'''
+		return 1.0 * subword_frequency.get_subphoneme_frequency(subphoneme, 'head') / subword_frequency.vocab_size
+
+	@staticmethod
+	def get_tail_phoneme_prob(subphoneme, subword_frequency):
+		'''
+		TOTALLY redundant with function in SubwordFrequency
+		'''
+		return 1.0 * subword_frequency.get_subphoneme_frequency(subphoneme, 'tail') / subword_frequency.vocab_size
+
+	@staticmethod
 	def get_phone_distance(phone1, phone2):
 	    '''
 	    identical pairs --> 0

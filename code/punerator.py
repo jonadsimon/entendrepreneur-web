@@ -54,7 +54,7 @@ if __name__ == '__main__':
             start = time()
             nearest_graphemes1 = get_semantic_neighbor_graphemes(grapheme1, fasttext_model)
             nearest_graphemes2 = get_semantic_neighbor_graphemes(grapheme2, fasttext_model)
-            print 'Finding nearest-neighbor graphemes: {:.2f}sec'.format(time()-start)    
+            print 'Finding nearest-neighbor graphemes: {:.2f}sec'.format(time()-start)
 
             start = time()
             nearest_words1 = [grapheme_to_word_dict.get_word(grapheme) for grapheme in nearest_graphemes1 if grapheme_to_word_dict.get_word(grapheme)]
@@ -70,6 +70,7 @@ if __name__ == '__main__':
         start = time()
         portmanteaus = get_portmanteaus(nearest_words1, nearest_words2, subword_frequency)
         print 'Portmanteau generation: {:.2f}sec'.format(time()-start)
+
         start = time()
         rhymes = get_rhymes(nearest_words1, nearest_words2, subword_frequency)
         print 'Rhyme generation: {:.2f}sec'.format(time()-start)

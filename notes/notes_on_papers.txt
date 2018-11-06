@@ -1,0 +1,22 @@
+**STANDUP**
+
+Prominent early work in pun-generation:
+JAPE (90s)
+STANDUP (00s)
+
+Both rely on "schemas, description rules, and templates"
+
+schema - linguistic rules relating sets of words in potentially-humorous ways (double-entendres)
+templates - fitting the linguistic pieces together in an e.g. 'what do you call a' format
+
+"There are various restrictions about which question templates are compatible with which answer templates, and also which templates are viable for the values coming from a particular schema. These combi- nations are coded up in a table; these are known as the joke types, as we found it useful to characterize types of joke in terms of underlying rule combinations."
+
+*Unisyn* for pronunciation & word roots, WordNet, Phonetic similarity, etc
+
+Combined with pictures
+
+**Automated Pun Generator**
+
+*Conceptnet*
+
+very similar to STANDUP

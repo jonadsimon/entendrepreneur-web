@@ -17,7 +17,10 @@ class Portmanteau(Pun):
 							n_overlapping_consonant_phones,
 							n_overlapping_phones,
 							overlap_distance,
-							overlap_grapheme_phoneme_prob):
+							overlap_grapheme_phoneme_prob,
+							overlap_grapheme_phoneme_prob2,
+							overlap_grapheme_phoneme_prob3
+							):
 		self.word1 = word1
 		self.word2 = word2
 		self.grapheme_portmanteau1 = grapheme_portmanteau1
@@ -31,6 +34,8 @@ class Portmanteau(Pun):
 		self.n_overlapping_phones = n_overlapping_phones
 		self.overlap_distance = overlap_distance
 		self.overlap_grapheme_phoneme_prob = overlap_grapheme_phoneme_prob
+		self.overlap_grapheme_phoneme_prob2 = overlap_grapheme_phoneme_prob2
+		self.overlap_grapheme_phoneme_prob3 = overlap_grapheme_phoneme_prob3
 
 	@classmethod
 	def get_pun(cls, word1, word2, subword_frequency):
@@ -119,6 +124,15 @@ class Portmanteau(Pun):
 				word2_overlap_grapheme_phoneme_prob = cls.get_grapheme_phoneme_prob(word2.grapheme[word2_grapheme_overlap_start_idx:word2_grapheme_overlap_end_idx+1], tuple(word2_arpabet_overlap), subword_frequency)
 				overlap_grapheme_phoneme_prob = max(word1_overlap_grapheme_phoneme_prob, word2_overlap_grapheme_phoneme_prob)
 
+				# word1_overlap_grapheme_phoneme_prob2 = cls.get_tail_grapheme_phoneme_prob(word1.grapheme[word1_grapheme_overlap_start_idx:word1_grapheme_overlap_end_idx+1], tuple(word1_arpabet_overlap), subword_frequency)
+				# word2_overlap_grapheme_phoneme_prob2 = cls.get_head_grapheme_phoneme_prob(word2.grapheme[word2_grapheme_overlap_start_idx:word2_grapheme_overlap_end_idx+1], tuple(word2_arpabet_overlap), subword_frequency)
+				# overlap_grapheme_phoneme_prob2 = max(word1_overlap_grapheme_phoneme_prob2, word2_overlap_grapheme_phoneme_prob2)
+				# overlap_grapheme_phoneme_prob3 = word1_overlap_grapheme_phoneme_prob2 * word2_overlap_grapheme_phoneme_prob2
+				word1_overlap_grapheme_phoneme_prob2 = cls.get_tail_phoneme_prob(tuple(word1_arpabet_overlap), subword_frequency)
+				word2_overlap_grapheme_phoneme_prob2 = cls.get_head_phoneme_prob(tuple(word2_arpabet_overlap), subword_frequency)
+				overlap_grapheme_phoneme_prob2 = max(word1_overlap_grapheme_phoneme_prob2, word2_overlap_grapheme_phoneme_prob2)
+				overlap_grapheme_phoneme_prob3 = word1_overlap_grapheme_phoneme_prob2 * word2_overlap_grapheme_phoneme_prob2
+
 				portmanteau = cls(
 					word1,
 					word2,
@@ -133,12 +147,44 @@ class Portmanteau(Pun):
 					num_overlap_consonant_phones1,
 					num_overlap_vowel_phones1+num_overlap_consonant_phones1,
 					overlap_distance,
-					overlap_grapheme_phoneme_prob
+					overlap_grapheme_phoneme_prob,
+					overlap_grapheme_phoneme_prob2,
+					overlap_grapheme_phoneme_prob3
 					)
 				return portmanteau, 0, 'portmanteau found!'
 
 		# failed to find any overlaps meeting the 'max_overlap_dist' criteria, so return with default error message
 		return portmanteau, status, message
+
+	# def __repr__(self):
+	# 	return '''
+	# 	-------------------------------------------------------------------------------
+	# 	# Word Combination: {} + {}
+	# 	# Grapheme Portmanteau: {} ({})
+	# 	# Phoneme Portmanteau: {} ({})
+	# 	# Phoneme Distance: {}
+	# 	# Grapheme+Phoneme Probability: {}
+	# 	# Grapheme+Phoneme Log-Probability: {}
+	# 	# Word|Grapheme Probability: {}
+	# 	# Word|Grapheme Log-Probability: {}
+	# 	# Overlapping Phones: {}
+	# 	# Overlapping Vowel Phones: {}
+	# 	# Overlapping Consonant Phones: {}
+	# 	-------------------------------------------------------------------------------
+	# 	'''.format(self.word1.grapheme,
+	# 		self.word2.grapheme,
+	# 		self.grapheme_portmanteau1,
+	# 		self.grapheme_portmanteau2,
+	# 		'-'.join(self.arpabet_portmanteau1), # represented internally as a list, so collapse the list to a string
+	# 		'-'.join(self.arpabet_portmanteau2), # represented internally as a list, so collapse the list to a string
+	# 		self.overlap_distance,
+	# 		round(self.overlap_grapheme_phoneme_prob, 5),
+	# 		round(np.log(self.overlap_grapheme_phoneme_prob), 2),
+	# 		round(min(self.reconstruction_proba1, self.reconstruction_proba2), 5),
+	# 		round(np.log(min(self.reconstruction_proba1, self.reconstruction_proba2)), 2),
+	# 		self.n_overlapping_phones,
+	# 		self.n_overlapping_vowel_phones,
+	# 		self.n_overlapping_consonant_phones)
 
 	def __repr__(self):
 		return '''
@@ -146,11 +192,11 @@ class Portmanteau(Pun):
 		# Word Combination: {} + {}
 		# Grapheme Portmanteau: {} ({})
 		# Phoneme Portmanteau: {} ({})
-		# Phoneme Distance: {}
-		# Grapheme+Phoneme Probability: {}
 		# Overlapping Phones: {}
-		# Overlapping Vowel Phones: {}
-		# Overlapping Consonant Phones: {}
+		# Phoneme Distance: {}
+		# Grapheme+Phoneme Probability: {:.2e}
+		# Grapheme+Phoneme Probability (2): {:.2e}
+		# Grapheme+Phoneme Probability (3): {:.2e}
 		-------------------------------------------------------------------------------
 		'''.format(self.word1.grapheme,
 			self.word2.grapheme,
@@ -158,17 +204,19 @@ class Portmanteau(Pun):
 			self.grapheme_portmanteau2,
 			'-'.join(self.arpabet_portmanteau1), # represented internally as a list, so collapse the list to a string
 			'-'.join(self.arpabet_portmanteau2), # represented internally as a list, so collapse the list to a string
-			self.overlap_distance,
-			round(self.overlap_grapheme_phoneme_prob, 5),
 			self.n_overlapping_phones,
-			self.n_overlapping_vowel_phones,
-			self.n_overlapping_consonant_phones)
+			self.overlap_distance,
+			self.overlap_grapheme_phoneme_prob,
+			self.overlap_grapheme_phoneme_prob2,
+			self.overlap_grapheme_phoneme_prob3
+			)
 
 	def __str__(self):
 		return '{} ({}/{})'.format(self.grapheme_portmanteau1, self.word1.grapheme, self.word2.grapheme)
 
 	def ordering_criterion(self):
 		'''Smaller values are "better" portmanteaus'''
-		return (-self.n_overlapping_phones, self.overlap_distance, self.overlap_grapheme_phoneme_prob)
+		return (self.overlap_distance, self.overlap_grapheme_phoneme_prob3)
+		# return (-self.n_overlapping_phones, self.overlap_distance, self.overlap_grapheme_phoneme_prob)
 		# return (-self.n_overlapping_phones, self.overlap_grapheme_phoneme_prob)
 		# return (self.overlap_grapheme_phoneme_prob, -self.n_overlapping_phones, -self.n_overlapping_vowel_phones, self.overlap_distance)
