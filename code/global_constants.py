@@ -15,7 +15,7 @@ MAX_VOCAB = 300000
 # TEST_INPUT = 'rosemary marriott'
 TEST_INPUT = 'master blaster'
 
-REPO_HOME = '/Users/jonathansimon/code/what-do-you-call-a-bot/'
+REPO_HOME = '/Users/jonsimon/Code/pun_generator/what-do-you-call-a-bot/'
 
 POS_ORDERING = {
     ('n','v'): 'keep',
