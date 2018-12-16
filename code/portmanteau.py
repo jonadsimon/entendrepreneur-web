@@ -13,8 +13,8 @@ class Portmanteau(Pun):
 	-------------------
 	# CLASS VARIABLES #
 	-------------------
-	word1 : Word
-	word2 : Word
+	word1, Word : first word appearing in the portmanteau
+	word2, Word : second word appearing in the portmanteau
 	grapheme_portmanteau1, String : primary grapheme represation of the portmanteau
 	grapheme_portmanteau2, String : alternate grapheme represation of the portmanteau
 	arpabet_portmanteau1, Array[String] : primary phonetic represation of the portmanteau

@@ -16,8 +16,8 @@ class Rhyme(Pun):
 	-------------------
 	# CLASS VARIABLES #
 	-------------------
-	word1 : Word
-	word2 : Word
+	word1, Word : first word appearing in the rhyme
+	word2, Word : second word appearing in the rhyme
 	n_overlapping_vowel_phones, Int : number of overlapping vowel phones in the rhyme
 	n_overlapping_consonant_phones, Int : number of overlapping consonant phones in the rhyme
 	n_overlapping_phones, Int : total number of overlapping phones in the rhyme
