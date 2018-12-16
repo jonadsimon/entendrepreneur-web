@@ -1,47 +1,32 @@
-## what-do-you-call-a-script
+## Entendrepreneur
 
-`punerator.py'
+The Entendrepreneur pun generator creates humorous portmanteaus and rhymes from provided input words.
 
-* TODO: overlap should have at least one vowel-sound
-* TODO: find neighbors with a heirarchical (2-level) search with 50 words in each layer
-* TODO: break of neighbor-grapheme identification into a separate function
-* TODO: figure out how many useful words I'm losing out on by not doing stemming/lemmatization
-* TODO: distinguish between non-stressed and primary-stressed syllables
+Example generated portmanteaus:
 
-'google-books-common-words.txt' file from here: http://norvig.com/google-books-common-words.txt
+* **Inputs:** drunk angry → **Output:** beeritable (beer/irritable)
+* **Inputs:** cute dog → **Output:** labradorable (labrador/adorable)
+* **Inputs:** literary cage → **Output:** shackademic (shack/academic)
 
-labradormitory
-sighsmologist - X
-rosemaryotte
-hungrief
-despairplane
+For additional details see the associated NeurIPS 2018 workshop paper: [Entendrepreneur: Generating Humorous Portmanteaus using Word-Embeddings](https://nips2018creativity.github.io/doc/entendrepreneur.pdf)
 
+## Requirements
 
+Code was built on Mac OS 10.12.6 using Python 2.7.10
 
-glitterati
-bromance - X
-backronym
+Python libraries used:
 
-sexcapade
-sexpert
+* **numpy** 1.15.4
+* **nltk** 3.3
+* **gensim** 3.6.0
+* **dill** 0.2.8.2
 
-brogrammer - X
+Pre-trained Models used:
 
-Travelocity
-dramedy - X
+* **FastText** wiki-news-300d-1M pretrained word vectors, downloadable on the [FastText website](https://fasttext.cc/docs/en/english-vectors.html)
+* **WordNet** corpus, downloadable via the [nltk interactive installer](http://www.nltk.org/data.html)
+* **CMU Pronouncing Dictionary** corpus, downloadable via the [nltk interactive installer]((http://www.nltk.org/data.html)
 
--- Fits structure of the word interior
-Japanoise - X
-hangry - X
-Aberzombie - X
+## Usage
 
-
-http://www.artoflanguageinvention.com/papers/features.pdf
-
-Hardcode phoneme distance rules
-
-Swap in facebook word vectors (fastvec)
-Facebok word vectors are trained on wikipedia, so cature different information
-Might want to add it in as yet-another source of word information, same as Wordnet
-
-Lists of first+last names: https://stackoverflow.com/questions/1803628/raw-list-of-person-names
+Citable paper soon to be released on ArXiv.
