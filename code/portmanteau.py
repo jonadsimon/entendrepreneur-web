@@ -97,7 +97,7 @@ class Portmanteau(Pun):
 		'''
 
 		# These are the default return values if no good overlaps are found
-		portmanteau, status, message = None, 1, 'no <=max_overlap_dist overlaps were found'
+		portmanteau, status, message = None, 1, 'no <=MAX_OVERLAP_DIST overlaps were found'
 
 		min_word_len = min(len(word1.arpabet_phoneme), len(word2.arpabet_phoneme))
 		for overlap_len in range(1,min_word_len):
@@ -108,7 +108,7 @@ class Portmanteau(Pun):
 			word1_arpabet_nonoverlap = word1.arpabet_phoneme[:word1_idx]
 			word2_arpabet_nonoverlap = word2.arpabet_phoneme[word2_idx:]
 			overlap_distance = cls.get_phoneme_distance(word1_arpabet_overlap, word2_arpabet_overlap)
-			if overlap_distance <= cls.max_overlap_dist:
+			if overlap_distance <= cls.MAX_OVERLAP_DIST:
 				# It's only possible to match vowels with vowels, and consonants with consonants, so only need to run the check on one of the phonemes
 				num_overlap_vowel_phones1 = sum([1 if filter(str.isalpha, str(phone)) in ARPABET_VOWELS else 0 for phone in word1_arpabet_overlap])
 				num_overlap_consonant_phones1 = sum([1 if filter(str.isalpha, str(phone)) in ARPABET_CONSONANTS else 0 for phone in word1_arpabet_overlap])
@@ -116,16 +116,16 @@ class Portmanteau(Pun):
 				num_non_overlap_phones2 = len(word2_arpabet_nonoverlap)
 
 				# Verify the the overlapping/nonoverlapping phones satisfy the desired constraints on e.g. length
-				if num_overlap_vowel_phones1 < cls.min_overlap_vowel_phones:
+				if num_overlap_vowel_phones1 < cls.MIN_OVERLAP_VOWEL_PHONES:
 					portmanteau, status, message = None, 1, 'arpabet overlap does not have enough vowels'
 					continue
-				elif num_overlap_consonant_phones1 < cls.min_overlap_consonant_phones:
+				elif num_overlap_consonant_phones1 < cls.MIN_OVERLAP_CONSONANT_PHONES:
 					portmanteau, status, message = None, 1, 'arpabet overlap does not have enough consonants'
 					continue
-				elif num_non_overlap_phones1 < cls.min_non_overlap_phones:
+				elif num_non_overlap_phones1 < cls.MIN_NON_OVERLAP_PHONES:
 					portmanteau, status, message = None, 1, 'word1 non-overlap does not have enough characters'
 					continue
-				elif num_non_overlap_phones2 < cls.min_non_overlap_phones:
+				elif num_non_overlap_phones2 < cls.MIN_NON_OVERLAP_PHONES:
 					portmanteau, status, message = None, 1, 'word2 non-overlap does not have enough characters'
 					continue
 
@@ -172,8 +172,8 @@ class Portmanteau(Pun):
 					arpabet_portmanteau1, arpabet_portmanteau2 = arpabet_portmanteau2, arpabet_portmanteau1
 
 				# Compute p(p_overlap, q_overlap) (see paper)
-				word1_overlap_phoneme_prob = cls.get_tail_phoneme_prob(tuple(word1_arpabet_overlap), subword_frequency)
-				word2_overlap_phoneme_prob = cls.get_head_phoneme_prob(tuple(word2_arpabet_overlap), subword_frequency)
+				word1_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_arpabet_overlap), 'tail', subword_frequency)
+				word2_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_arpabet_overlap), 'head', subword_frequency)
 				overlap_phoneme_prob = word1_overlap_phoneme_prob * word2_overlap_phoneme_prob
 
 				# Instantiate the constructed portmanteau, and return it
@@ -195,7 +195,7 @@ class Portmanteau(Pun):
 					)
 				return portmanteau, 0, 'portmanteau found!'
 
-		# Failed to find any overlaps meeting the 'max_overlap_dist' criteria, so return with the default error message
+		# Failed to find any overlaps meeting the 'MAX_OVERLAP_DIST' criteria, so return with the default error message
 		return portmanteau, status, message
 
 	def __repr__(self):
