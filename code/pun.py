@@ -11,7 +11,7 @@ class Pun(object):
 
 	# Want to only consider start of word, or want to also do middle of word?
 	# Try *all* internal matches, so reason to restrict ourselves
-	
+
 	@classmethod
 	def get_pun(cls, word1, word2, subword_frequency):
 		pass
