@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     start = time()
     if not options['test']:
-        # Load Facebook's pre-trained FastVec model
+        # Load Facebook's pre-trained FastText model
         fasttext_model = gensim.models.KeyedVectors.load_word2vec_format(REPO_HOME+'data/word_vectors/wiki-news-300d-1M.vec', limit=MAX_VOCAB)
     print 'FastText loading: {:.2f}sec'.format(time()-start)
 
@@ -40,7 +40,7 @@ if __name__ == '__main__':
                 continue
 
             # Split input string into the two consituent graphemes
-            grapheme1, grapheme2 = parse_input(input_string)
+            grapheme1, grapheme2 = input_string.split()
 
             # Find the semantic neighbors of the graphemes
             start = time()
