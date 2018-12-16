@@ -103,7 +103,7 @@ def get_shortest_lemma(grapheme, lemmatizer=WordNetLemmatizer(), stemmer=PorterS
 
     Note: be sure to predefine/pass in the lemmatizer in advance, so that it doesn't need to be recreated on each run
     '''
-    
+
     shortest_lemma = grapheme
 
     # First attempt to trim using lemmatizer
@@ -165,7 +165,7 @@ def get_portmanteaus(words1_neighbors, words2_neighbors, subword_frequency):
             portmanteau, status, message = Portmanteau.get_pun(neighbor2, neighbor1, subword_frequency)
             if status == 0:
                 portmanteau_set.add(portmanteau)
-    
+
     portmanteau_list = list(portmanteau_set)
 
     # Order according to quality

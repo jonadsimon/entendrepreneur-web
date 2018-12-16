@@ -11,17 +11,17 @@ class SubwordFrequency(object):
 	-------------------
 	# CLASS VARIABLES #
 	-------------------
-	subgrapheme_head_counter, Dict[String] => Int : frequency with which each subgrapheme occurred at the start of a grapheme
-	subgrapheme_tail_counter, Dict[String] => Int : frequency with which each subgrapheme occurred at the end of a grapheme
-	subgrapheme_counter, Dict[String] => Int : frequency with which each subgrapheme occurred within a grapheme
+	subgrapheme_head_counter, Dict[String => Int] : frequency with which each subgrapheme occurred at the start of a grapheme
+	subgrapheme_tail_counter, Dict[String => Int] : frequency with which each subgrapheme occurred at the end of a grapheme
+	subgrapheme_counter, Dict[String => Int] : frequency with which each subgrapheme occurred within a grapheme
 
-	subphoneme_head_counter, Dict[Array[String]] => Int : frequency with which each subphoneme occurred at the start of a phoneme
-	subphoneme_tail_counter, Dict[Array[String]] => Int : frequency with which each subphoneme occurred at the end of a phoneme
-	subphoneme_counter, Dict[Array[String]] => Int : frequency with which each subphoneme occurred within a phoneme
+	subphoneme_head_counter, Dict[Array[String] => Int] : frequency with which each subphoneme occurred at the start of a phoneme
+	subphoneme_tail_counter, Dict[Array[String] => Int] : frequency with which each subphoneme occurred at the end of a phoneme
+	subphoneme_counter, Dict[Array[String] => Int] : frequency with which each subphoneme occurred within a phoneme
 
-	subword_head_counter, Dict[(String,Array[String])] => Int : frequency with which each subgrapheme/subphoneme pair occurred at the start of a word
-	subword_tail_counter, Dict[(String,Array[String])] => Int : frequency with which each subgrapheme/subphoneme pair occurred at the end of a word
-	subword_counter, Dict[(String,Array[String])] => Int : frequency with which each subgrapheme/subphoneme pair occurred within a word
+	subword_head_counter, Dict[(String,Array[String]) => Int] : frequency with which each subgrapheme/subphoneme pair occurred at the start of a word
+	subword_tail_counter, Dict[(String,Array[String]) => Int] : frequency with which each subgrapheme/subphoneme pair occurred at the end of a word
+	subword_counter, Dict[(String,Array[String]) => Int] : frequency with which each subgrapheme/subphoneme pair occurred within a word
 
 	vocab_size, Int : number of graphemes in the CMU Pronouncing Dictionary
 
