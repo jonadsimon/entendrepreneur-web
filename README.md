@@ -1,6 +1,6 @@
 ## Entendrepreneur
 
-The Entendrepreneur pun generator creates humorous portmanteaus and rhymes from provided input words.
+The Entendrepreneur (entendre/entrepreneur) pun generator creates humorous portmanteaus and rhymes from provided input words.
 
 Example generated portmanteaus:
 
