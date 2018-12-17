@@ -25,7 +25,7 @@ Pre-trained Models used:
 
 * **FastText** wiki-news-300d-1M pretrained word vectors, downloadable on the [FastText website](https://fasttext.cc/docs/en/english-vectors.html)
 * **WordNet** corpus, downloadable via the [nltk interactive installer](http://www.nltk.org/data.html)
-* **CMU Pronouncing Dictionary** corpus, downloadable via the [nltk interactive installer]((http://www.nltk.org/data.html)
+* **CMU Pronouncing Dictionary** corpus, downloadable via the [nltk interactive installer](http://www.nltk.org/data.html)
 
 ## Usage
 
