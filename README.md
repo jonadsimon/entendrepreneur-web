@@ -14,16 +14,16 @@ For additional details see the associated NeurIPS 2018 workshop paper: [Entendre
 
 Code was built on Mac OS 10.12.6 using Python 2.7.10
 
-Python libraries used:
+Python Libraries:
 
 * **numpy** 1.15.4
 * **nltk** 3.3
 * **gensim** 3.6.0
 * **dill** 0.2.8.2
 
-Pre-trained Models used:
+Pre-trained Models and Corpora:
 
-* **FastText** wiki-news-300d-1M pretrained word vectors, downloadable on the [FastText website](https://fasttext.cc/docs/en/english-vectors.html)
+* **FastText** wiki-news-300d-1M pretrained word vectors, downloadable via the [FastText website](https://fasttext.cc/docs/en/english-vectors.html)
 * **WordNet** corpus, downloadable via the [nltk interactive installer](http://www.nltk.org/data.html)
 * **CMU Pronouncing Dictionary** corpus, downloadable via the [nltk interactive installer](http://www.nltk.org/data.html)
 
