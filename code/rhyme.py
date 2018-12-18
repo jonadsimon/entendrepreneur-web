@@ -82,60 +82,60 @@ class Rhyme(Pun):
 		# These are the default return values if no good overlaps are found
 		rhyme, status, message = None, 1, 'no <=MAX_OVERLAP_DIST overlaps were found'
 
-		min_word_len = min(len(word1.arpabet_phoneme), len(word2.arpabet_phoneme))
+		min_word_len = min(len(word1.phoneme), len(word2.phoneme))
 		# Iterate in reverse, so that the largest phoneme overlap is identified
 		for overlap_len in range(min_word_len-1,0,-1):
-			word1_arpabet_overlap = word1.arpabet_phoneme[-overlap_len:]
-			word2_arpabet_overlap = word2.arpabet_phoneme[-overlap_len:]
-			word1_arpabet_nonoverlap = word1.arpabet_phoneme[:-overlap_len]
-			word2_arpabet_nonoverlap = word2.arpabet_phoneme[:-overlap_len]
-			overlap_distance = cls.get_phoneme_distance(word1_arpabet_overlap, word2_arpabet_overlap)
+			word1_phoneme_overlap = word1.phoneme[-overlap_len:]
+			word2_phoneme_overlap = word2.phoneme[-overlap_len:]
+			word1_phoneme_nonoverlap = word1.phoneme[:-overlap_len]
+			word2_phoneme_nonoverlap = word2.phoneme[:-overlap_len]
+			overlap_distance = cls.get_phoneme_distance(word1_phoneme_overlap, word2_phoneme_overlap)
 			if overlap_distance <= cls.MAX_OVERLAP_DIST:
 				# It's only possible to match vowels with vowels, and consonants with consonants, so only need to run the check on one of the phonemes
-				num_overlap_vowel_phones1 = sum([1 if filter(str.isalpha, str(phone)) in ARPABET_VOWELS else 0 for phone in word1_arpabet_overlap])
-				num_overlap_consonant_phones1 = sum([1 if filter(str.isalpha, str(phone)) in ARPABET_CONSONANTS else 0 for phone in word1_arpabet_overlap])
-				num_non_overlap_phones1 = len(word1_arpabet_nonoverlap)
-				num_overlap_phones1 = len(word1_arpabet_overlap)
-				num_non_overlap_phones2 = len(word2_arpabet_nonoverlap) # need to save this for later
-				first_overlap_phone1 = filter(str.isalpha, str(word1_arpabet_overlap[0]))
+				num_overlap_vowel_phones1 = sum([1 if filter(str.isalpha, str(phone)) in ARPABET_VOWELS else 0 for phone in word1_phoneme_overlap])
+				num_overlap_consonant_phones1 = sum([1 if filter(str.isalpha, str(phone)) in ARPABET_CONSONANTS else 0 for phone in word1_phoneme_overlap])
+				num_non_overlap_phones1 = len(word1_phoneme_nonoverlap)
+				num_overlap_phones1 = len(word1_phoneme_overlap)
+				num_non_overlap_phones2 = len(word2_phoneme_nonoverlap) # need to save this for later
+				first_overlap_phone1 = filter(str.isalpha, str(word1_phoneme_overlap[0]))
 
 				# Verify the the overlapping/nonoverlapping phones satisfy the desired constraints on e.g. length
 				if num_overlap_vowel_phones1 < cls.MIN_OVERLAP_VOWEL_PHONES:
-					rhyme, status, message = None, 1, 'arpabet overlap does not have enough vowels'
+					rhyme, status, message = None, 1, 'phoneme overlap does not have enough vowels'
 					continue
 				elif num_overlap_consonant_phones1 < cls.MIN_OVERLAP_CONSONANT_PHONES:
-					rhyme, status, message = None, 1, 'arpabet overlap does not have enough consonants'
+					rhyme, status, message = None, 1, 'phoneme overlap does not have enough consonants'
 					continue
 				elif num_overlap_phones1 < cls.MIN_OVERLAP_PHONES:
-					rhyme, status, message = None, 1, 'arpabet overlap does not have enough phones'
+					rhyme, status, message = None, 1, 'phoneme overlap does not have enough phones'
 					continue
 				elif first_overlap_phone1 not in ARPABET_VOWELS:
-					rhyme, status, message = None, 1, 'arpabet overlap does not start with a vowel phone'
+					rhyme, status, message = None, 1, 'phoneme overlap does not start with a vowel phone'
 					continue
 
 				# Highly redundant, consider scrapping
-				word1_arpabet_overlap_start_idx, word1_arpabet_overlap_end_idx = len(word1.arpabet_phoneme) - overlap_len, len(word1.arpabet_phoneme) - 1
-				word2_arpabet_overlap_start_idx, word2_arpabet_overlap_end_idx = len(word2.arpabet_phoneme) - overlap_len, len(word2.arpabet_phoneme) - 1
+				word1_phoneme_overlap_start_idx, word1_phoneme_overlap_end_idx = len(word1.phoneme) - overlap_len, len(word1.phoneme) - 1
+				word2_phoneme_overlap_start_idx, word2_phoneme_overlap_end_idx = len(word2.phoneme) - overlap_len, len(word2.phoneme) - 1
 
 				# The phonemes contain a viable overlap, but the overlap cannot be brought into alignment with the first grapheme
 				try:
-					word1_grapheme_overlap_start_idx, word1_grapheme_overlap_end_idx = word1.grapheme_to_arpabet_phoneme_alignment.subseq2_inds_to_subseq1_inds(word1_arpabet_overlap_start_idx, word1_arpabet_overlap_end_idx)
+					word1_grapheme_overlap_start_idx, word1_grapheme_overlap_end_idx = word1.grapheme_to_phoneme_alignment.subseq2_inds_to_subseq1_inds(word1_phoneme_overlap_start_idx, word1_phoneme_overlap_end_idx)
 				except:
-					rhyme, status, message = None, 1, 'word1 arpabet_phoneme could not be aligned with grapheme'
+					rhyme, status, message = None, 1, 'word1 phoneme could not be aligned with grapheme'
 					continue
 
 				# The phonemes contain a viable overlap, but the overlap cannot be brought into alignment with the second grapheme
 				try:
-					word2_grapheme_overlap_start_idx, word2_grapheme_overlap_end_idx = word2.grapheme_to_arpabet_phoneme_alignment.subseq2_inds_to_subseq1_inds(word2_arpabet_overlap_start_idx, word2_arpabet_overlap_end_idx)
+					word2_grapheme_overlap_start_idx, word2_grapheme_overlap_end_idx = word2.grapheme_to_phoneme_alignment.subseq2_inds_to_subseq1_inds(word2_phoneme_overlap_start_idx, word2_phoneme_overlap_end_idx)
 				except:
-					rhyme, status, message = None, 1, 'word2 arpabet_phoneme could not be aligned with grapheme'
+					rhyme, status, message = None, 1, 'word2 phoneme could not be aligned with grapheme'
 					continue
 
 				# All alignments and min-char requirements have been met, so create the Rhyme, and return it
 
 				# Compute p(p_overlap, q_overlap) (see paper)
-				word1_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_arpabet_overlap), 'tail', subword_frequency)
-				word2_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_arpabet_overlap), 'tail', subword_frequency)
+				word1_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), 'tail', subword_frequency)
+				word2_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), 'tail', subword_frequency)
 				overlap_phoneme_prob = word1_tail_phoneme_prob * word2_tail_phoneme_prob
 
 				# Use POS + grapheme_length ordering rules to decide which word to put first
@@ -217,8 +217,8 @@ class Rhyme(Pun):
 		-------------------------------------------------------------------------------
 		'''.format(self.word1.grapheme,
 			self.word2.grapheme,
-			'-'.join(self.word1.arpabet_phoneme), # represented internally as a list, so collapse the list to a string
-			'-'.join(self.word2.arpabet_phoneme), # represented internally as a list, so collapse the list to a string
+			'-'.join(self.word1.phoneme), # represented internally as a list, so collapse the list to a string
+			'-'.join(self.word2.phoneme), # represented internally as a list, so collapse the list to a string
 			self.n_overlapping_phones,
 			self.overlap_distance,
 			self.overlap_phoneme_prob
