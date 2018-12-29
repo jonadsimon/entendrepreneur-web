@@ -2,9 +2,7 @@ import numpy as np
 from nltk.corpus import cmudict
 import sys
 sys.path.insert(0, '../code') # need to add the code path for other imports to work
-from word import Word
-from sequence_alignment import SequenceAlignment
-from pronunciation_dictionary import PronunciationDictionary
+from word_table import Word
 
 # Aligned pairs use the following syntax:
 # 1) chunked graphemes/phonemes are divided by '|' symbols
@@ -67,23 +65,27 @@ def phoneme_chunks_to_stressed_phoneme_chunks(phoneme_chunks, grapheme):
     stressed_phoneme_chunks = [tuple(stressed_phoneme[start_idx:end_idx]) for (start_idx,end_idx) in idx_pairs]
     return stressed_phoneme_chunks, stressed_phoneme
 
-# Load the aligned grapheme/phoneme pairs
-with open('../data/g2p_alignment/m2m_preprocessed_cmudict.txt.m-mAlign.2-2.delX.1-best.conYX.align') as infile:
-    aligned_grapheme_phoneme_pairs = [line.strip().split('\t') for line in infile.readlines()]
+def populate_word_table(session):
+    '''
+    Take the current db session as an argument, and populate the words table
+    '''
 
-# Use the aligned grapheme/phoneme pairs to create a PronunciationDictionary
-word_list = []
-for m2m_grapheme, m2m_phoneme in aligned_grapheme_phoneme_pairs:
-    grapheme_chunks = m2m_grapheme_to_grapheme_chunks(m2m_grapheme)
-    grapheme = grapheme_chunks_to_grapheme_string(grapheme_chunks)
+    # Load the aligned grapheme/phoneme pairs
+    with open('../data/g2p_alignment/m2m_preprocessed_cmudict.txt.m-mAlign.2-2.delX.1-best.conYX.align') as infile:
+        aligned_grapheme_phoneme_pairs = [line.strip().split('\t') for line in infile.readlines()]
 
-    phoneme_chunks = m2m_phoneme_to_phoneme_chunks(m2m_phoneme)
-    stressed_phoneme_chunks, stressed_phoneme = phoneme_chunks_to_stressed_phoneme_chunks(phoneme_chunks, grapheme)
+    # Transform the aligned grapheme/phoneme pairs to conform to the Word table schema
+    word_list = []
+    for m2m_grapheme, m2m_phoneme in aligned_grapheme_phoneme_pairs:
+        grapheme_chunks = m2m_grapheme_to_grapheme_chunks(m2m_grapheme)
+        grapheme = grapheme_chunks_to_grapheme_string(grapheme_chunks)
 
-    grapheme_phoneme_aligment = SequenceAlignment(grapheme_chunks, stressed_phoneme_chunks)
+        phoneme_chunks = m2m_phoneme_to_phoneme_chunks(m2m_phoneme)
+        stressed_phoneme_chunks, stressed_phoneme = phoneme_chunks_to_stressed_phoneme_chunks(phoneme_chunks, grapheme)
 
-    new_word = Word(grapheme, stressed_phoneme, grapheme_phoneme_aligment)
-    word_list.append(new_word)
+        new_word = Word(grapheme=grapheme, phoneme=cmu_dict[grapheme][0], grapheme_chunks=grapheme_chunks, phoneme_chunks=stressed_phoneme_chunks)
+        word_list.append(new_word)
 
-# Save the PronunciationDictionary
-PronunciationDictionary(word_list).save('../data/pronunciation_dictionary.pkl')
+    # Add the generated Word objects to the Word table, and commit the changes
+    session.add_all(word_list)
+    session.commit()
