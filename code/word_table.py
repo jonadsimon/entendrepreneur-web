@@ -3,7 +3,6 @@ from sqlalchemy import Column, Integer, String, ARRAY, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.session import object_session
 
-from global_constants import MAX_NEIGHBORS
 import numpy as np
 
 Base = declarative_base()
@@ -16,8 +15,6 @@ class Word(Base): # will likely cause a name collision... "GraphemePhonemePair"
     phoneme = Column(ARRAY(String))
     grapheme_chunks = Column(JSON)
     phoneme_chunks = Column(JSON)
-
-    fasttext_vector_elements = relationship("FasttextVectorElement")
 
     def __repr__(self):
         return "<Word(grapheme='%s', phoneme='%s')>" % (self.grapheme, '-'.join(self.phoneme))
@@ -56,34 +53,3 @@ class Word(Base): # will likely cause a name collision... "GraphemePhonemePair"
         Strip the stress information off of the phoneme
         '''
         return [filter(str.isalpha, str(phone)) for phone in self.phoneme]
-
-    def get_semantic_neighbors(self):
-        '''
-        Computes the cosine distance of word with every other word vector in FasttextVectorElement,
-        and returns the nearest MAX_NEIGHBORS many words, along with word itself
-
-        Very difficult to structure this query in SQLAlchemy's query meta-language,
-        so just use 'execute' to run the raw SQL
-        '''
-
-        session = object_session(self) # get the session that the current Word instance instance is associated with
-
-        query = '''
-        SELECT
-            fv2.word_id,
-            SUM(fv1.value * fv2.value) / (SQRT(SUM(fv1.value * fv1.value)) * SQRT(SUM(fv2.value * fv2.value))) cosine_dist
-        FROM fasttext_vector_elements fv1
-        JOIN fasttext_vector_elements fv2
-        ON
-            fv1.word_id = :word_id
-            AND fv1.index = fv2.index
-        GROUP BY 1
-        ORDER BY 2
-        LIMIT :max_neighbors + 1
-        '''
-        result = session.execute(query, {'word_id': self.id, 'max_neighbors': MAX_NEIGHBORS}) # pass in query params
-
-        neighbor_word_ids = [row['word_id'] for row in result]
-        neighbor_words = session.query(Word).filter_by(Word.id.in_(neighbor_word_ids)).all()
-
-        return neighbor_words

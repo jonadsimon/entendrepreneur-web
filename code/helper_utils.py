@@ -66,17 +66,6 @@ def validate_input(input_string, recognized_graphemes):
 
     return status, message
 
-def get_fasttext_neighbors(grapheme, fasttext_model):
-    '''
-    For a given grapheme, return the MAX_NEIGHBORS many nearest neighbor graphemes to it
-    (or to one of its alternative_grapheme_capitalizations) in the FastText embedding
-    '''
-    for g in alternative_grapheme_capitalizations(grapheme):
-        if g in fasttext_model.vocab:
-            return list(zip(*fasttext_model.most_similar(positive=[g], topn=MAX_NEIGHBORS))[0])
-    else:
-        raise 'This code path should NEVER execute, something has gone HORRIBLY wrong'
-
 def get_shortest_lemma(grapheme, lemmatizer=WordNetLemmatizer(), stemmer=PorterStemmer()):
     '''
     Don't want to produce multiple portmanteaus/rhymes where one of the words differs only by its e.g. pluralization
@@ -113,20 +102,37 @@ def get_shortest_lemma(grapheme, lemmatizer=WordNetLemmatizer(), stemmer=PorterS
 
     return shortest_lemma
 
-def get_semantic_neighbor_graphemes(grapheme, fasttext_model):
+def get_semantic_neighbor_graphemes(grapheme, session):
     '''
-    For a given input grapheme, finds its FastText nearest neighbors, and then cleans these neighbor graphemes
-    by mapping each to its shortest variant using 'get_shortest_lemma', and deduplicating the results
+    Computes the cosine distance of the input grapheme's word vector with every other word vector in FasttextVectorElement,
+    and returns the nearest MAX_NEIGHBORS many graphemes, along with the grapheme itself
+
+    Very difficult to structure this query in SQLAlchemy's query meta-language,
+    so just use 'execute' to run the raw SQL
     '''
-    # Not ideal that 'fasttext_model' has to be passed twice... consider refactoring
-    fasttext_neighbors = get_fasttext_neighbors(grapheme, fasttext_model)
+
+    query = '''
+    SELECT
+        fv2.grapheme,
+        SUM(fv1.value * fv2.value) / (SQRT(SUM(fv1.value * fv1.value)) * SQRT(SUM(fv2.value * fv2.value))) cosine_dist
+    FROM fasttext_vector_elements fv1
+    JOIN fasttext_vector_elements fv2
+    ON
+        fv1.grapheme = :grapheme
+        AND fv1.index = fv2.index
+    GROUP BY 1
+    ORDER BY 2
+    LIMIT :max_neighbors + 1
+    '''
+    result = session.execute(query, {'grapheme': grapheme, 'max_neighbors': MAX_NEIGHBORS}) # pass in query params
+
+    fasttext_neighbor_graphemes = [row['grapheme'] for row in result]
 
     # FastText sometimes returns funky unicode characters like umlouts, so make sure to catch/discard these before continuing
-    # Make sure to include the input word itself as one of the neighbors
-    fasttext_neighbors_clean = [grapheme]
-    for g in fasttext_neighbors:
+    fasttext_neighbor_graphemes_clean = []
+    for g in fasttext_neighbor_graphemes:
         try:
-            fasttext_neighbors_clean.append(str(g))
+            fasttext_neighbor_graphemes_clean.append(str(g))
         except:
             pass
 
@@ -135,7 +141,7 @@ def get_semantic_neighbor_graphemes(grapheme, fasttext_model):
     # 2) find shortest lemma or valid stem
     # 3) deduplicate
     wnl = WordNetLemmatizer()
-    semantic_neighbor_graphemes = map(lambda g: get_shortest_lemma(g.lower(), wnl), fasttext_neighbors_clean)
+    semantic_neighbor_graphemes = map(lambda g: get_shortest_lemma(g.lower(), wnl), fasttext_neighbor_graphemes_clean)
     semantic_neighbor_graphemes = set(semantic_neighbor_graphemes)
 
     return semantic_neighbor_graphemes
