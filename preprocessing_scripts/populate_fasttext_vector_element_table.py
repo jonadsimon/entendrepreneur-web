@@ -29,7 +29,3 @@ def populate_fasttext_vector_element_table(session):
             vector_element_list = []
             print 'Finished committing vector {}'.format(grapheme_idx)
             print 'Looping duration elapsed: {:.0f} seconds'.format(time()-start)
-    #
-    # # Add the generated FasttextVectorElement objects to the FasttextVectorElement table, and commit the changes
-    # session.add_all(vector_element_list)
-    # session.commit()

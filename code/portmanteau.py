@@ -63,7 +63,7 @@ class Portmanteau(Pun):
 		self.overlap_phoneme_prob = overlap_phoneme_prob
 
 	@classmethod
-	def get_pun(cls, word1, word2, subword_frequency):
+	def get_pun(cls, word1, word2, session):
 		'''
 		---------------
 		# DESCRIPTION #
@@ -86,7 +86,7 @@ class Portmanteau(Pun):
 		----------
 		word1, Word : first word in the (possible) portmanteau
 		word2, Word : second word in the (possible) portmanteau
-		subword_frequency, SubwordFrequency : lookup table of subgrapheme/subphoneme frequencies
+		session, Session : session attached to the postgres database
 
 		-----------
 		# OUTPUTS #
@@ -156,8 +156,8 @@ class Portmanteau(Pun):
 				word1_grapheme_nonoverlap = ''.join(word1.grapheme_to_phoneme_alignment.subseq2_to_subseq1(0, word1_phoneme_overlap_start_idx-1))
 				word2_grapheme_nonoverlap = ''.join(word2.grapheme_to_phoneme_alignment.subseq2_to_subseq1(word2_phoneme_overlap_end_idx+1, len(word2.phoneme)-1))
 
-				word1_prob_given_dangling_graphs = cls.get_prob_word_given_subgrapheme(word1_grapheme_nonoverlap, 'head', subword_frequency)
-				word2_prob_given_dangling_graphs = cls.get_prob_word_given_subgrapheme(word2_grapheme_nonoverlap, 'tail', subword_frequency)
+				word1_prob_given_dangling_graphs = cls.get_prob_word_given_subgrapheme(word1_grapheme_nonoverlap, 'head', session)
+				word2_prob_given_dangling_graphs = cls.get_prob_word_given_subgrapheme(word2_grapheme_nonoverlap, 'tail', session)
 
 				grapheme_portmanteau1 = word1.grapheme + word2_grapheme_nonoverlap
 				grapheme_portmanteau2 = word1_grapheme_nonoverlap + word2.grapheme
@@ -172,8 +172,8 @@ class Portmanteau(Pun):
 					phoneme_portmanteau1, phoneme_portmanteau2 = phoneme_portmanteau2, phoneme_portmanteau1
 
 				# Compute p(p_overlap, q_overlap) (see paper)
-				word1_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), 'tail', subword_frequency)
-				word2_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), 'head', subword_frequency)
+				word1_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), 'tail', session)
+				word2_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), 'head', session)
 				overlap_phoneme_prob = word1_overlap_phoneme_prob * word2_overlap_phoneme_prob
 
 				# Instantiate the constructed portmanteau, and return it

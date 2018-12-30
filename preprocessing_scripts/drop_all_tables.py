@@ -1,5 +1,4 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 
 import sys
 sys.path.insert(0, '../code') # need to add the code path for other imports to work

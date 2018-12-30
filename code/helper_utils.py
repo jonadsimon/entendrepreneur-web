@@ -36,7 +36,7 @@ def alternative_grapheme_capitalizations(grapheme):
         capitalization_alternatives.append(grapheme[0].upper()+grapheme[1:].lower())
     return capitalization_alternatives
 
-def validate_input(input_string, recognized_graphemes):
+def validate_input(input_string, session):
     '''
     Verify that the user-provided input string is comprised of two graphemes, and that both graphemes are present in FastText
     '''
@@ -46,9 +46,13 @@ def validate_input(input_string, recognized_graphemes):
     else:
         grapheme1, grapheme2 = input_string.split()
 
+        # Get lists of possible alternative capitalizations for each grapheme
+        grapheme1_alternatives = alternative_grapheme_capitalizations(grapheme1)
+        grapheme2_alternatives = alternative_grapheme_capitalizations(grapheme2)
+
         # Each grapheme itself or one of its "alternative_grapheme_capitalizations" must exists in the FastText corpus
-        grapheme1_exists = any([g in recognized_graphemes for g in alternative_grapheme_capitalizations(grapheme1)])
-        grapheme2_exists = any([g in recognized_graphemes for g in alternative_grapheme_capitalizations(grapheme2)])
+        grapheme1_exists = session.query(FasttextGrapheme).filter(FasttextGrapheme.grapheme.in_(grapheme1_alternatives)).all() != []
+        grapheme2_exists = session.query(FasttextGrapheme).filter(FasttextGrapheme.grapheme.in_(grapheme2_alternatives)).all() != []
 
         # Return the appropriate error if either of the graphemes cannot does not exist in FastText, else return status=0
         if not grapheme1_exists and grapheme2_exists:
@@ -149,7 +153,7 @@ def get_semantic_neighbor_graphemes(grapheme, session):
 
     return semantic_neighbor_graphemes
 
-def get_portmanteaus(words1_neighbors, words2_neighbors, subword_frequency):
+def get_portmanteaus(words1_neighbors, words2_neighbors, session):
     '''
     Given a two lists of words, attempt to construct portmanteaus out of each of the
     |words1_neighbors| x |words2_neighbors| many word pairs. Order the generated portmanteaus
@@ -163,13 +167,11 @@ def get_portmanteaus(words1_neighbors, words2_neighbors, subword_frequency):
             if neighbor1.grapheme == neighbor2.grapheme:
                 continue
             # Generate forward-ordered portmanteau
-            # Not ideal that 'subword_frequency' has to be passed twice... consider refactoring
-            portmanteau, status, message = Portmanteau.get_pun(neighbor1, neighbor2, subword_frequency)
+            portmanteau, status, message = Portmanteau.get_pun(neighbor1, neighbor2, session)
             if status == 0:
                 portmanteau_set.add(portmanteau)
             # Generate reverse-ordered portmanteau
-            # Not ideal that 'subword_frequency' has to be passed twice... consider refactoring
-            portmanteau, status, message = Portmanteau.get_pun(neighbor2, neighbor1, subword_frequency)
+            portmanteau, status, message = Portmanteau.get_pun(neighbor2, neighbor1, session)
             if status == 0:
                 portmanteau_set.add(portmanteau)
 
@@ -179,7 +181,7 @@ def get_portmanteaus(words1_neighbors, words2_neighbors, subword_frequency):
 
     return portmanteau_list
 
-def get_rhymes(words1_neighbors, words2_neighbors, subword_frequency):
+def get_rhymes(words1_neighbors, words2_neighbors, session):
     '''
     Given a two lists of words, attempt to construct rhyme out of each of the
     |words1_neighbors| x |words2_neighbors| many word pairs. Order the generated rhymes
@@ -194,8 +196,7 @@ def get_rhymes(words1_neighbors, words2_neighbors, subword_frequency):
                 continue
             # Generate the rhyme for only a single ordering, if the words need to be flipped
             # for quality reasons, that's handled within the 'get_rhyme' function
-            # Not ideal that 'subword_frequency' has to be passed twice... consider refactoring
-            rhyme, status, message = Rhyme.get_pun(neighbor1, neighbor2, subword_frequency)
+            rhyme, status, message = Rhyme.get_pun(neighbor1, neighbor2, session)
             if status == 0:
                 rhyme_set.add(rhyme)
 

@@ -1,4 +1,3 @@
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
 from base import Base
 
@@ -15,11 +14,11 @@ class SubgraphemeFrequency(Base):
         return "<SubgraphemeFrequency(grapheme='%s', frequency=%i, frequency_head=%i, frequency_tail=%i)>" % (self.grapheme, self.frequency, self.frequency_head, self.frequency_tail)
 
     @staticmethod
-    def get_subgrapheme_frequency(this_grapheme, side='all'):
+    def get_subgrapheme_frequency(this_grapheme, session, side='all'):
         '''
         Return the frequency of the grapheme
         '''
-        subgrapheme_frequency = SubgraphemeFrequency.query.filter(grapheme==this_grapheme).one()
+        subgrapheme_frequency = session.query(SubgraphemeFrequency).filter(SubgraphemeFrequency.grapheme==this_grapheme).one()
         if side == 'head':
             return subgrapheme_frequency.frequency_head
         elif side == 'tail':

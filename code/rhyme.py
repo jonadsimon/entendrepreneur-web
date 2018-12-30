@@ -48,7 +48,7 @@ class Rhyme(Pun):
 		self.overlap_phoneme_prob = overlap_phoneme_prob
 
 	@classmethod
-	def get_pun(cls, word1, word2, subword_frequency):
+	def get_pun(cls, word1, word2, session):
 		'''
 		---------------
 		# DESCRIPTION #
@@ -69,7 +69,7 @@ class Rhyme(Pun):
 		----------
 		word1, Word : first word in the (possible) rhyme
 		word2, Word : second word in the (possible) rhyme
-		subword_frequency, SubwordFrequency : lookup table of subgrapheme/subphoneme frequencies
+		session, Session : session attached to the postgres database
 
 		-----------
 		# OUTPUTS #
@@ -134,8 +134,8 @@ class Rhyme(Pun):
 				# All alignments and min-char requirements have been met, so create the Rhyme, and return it
 
 				# Compute p(p_overlap, q_overlap) (see paper)
-				word1_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), 'tail', subword_frequency)
-				word2_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), 'tail', subword_frequency)
+				word1_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), 'tail', session)
+				word2_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), 'tail', session)
 				overlap_phoneme_prob = word1_tail_phoneme_prob * word2_tail_phoneme_prob
 
 				# Use POS + grapheme_length ordering rules to decide which word to put first
