@@ -12,6 +12,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
+import sys
+sys.path.insert(0, '../code') # need to add the code path for other imports to work
+# Import tables up front so that table creation works correctly
+from base import Base
+from word_table import Word
+from subgrapheme_frequency_table import SubgraphemeFrequency
+from subphoneme_frequency_table import SubphonemeFrequency
+from fasttext_vector_tables import FasttextGrapheme, FasttextVectorElement
+
 from populate_word_table import populate_word_table
 from populate_subgrapheme_frequency_table import populate_subgrapheme_frequency_table
 from populate_subphoneme_frequency_table import populate_subphoneme_frequency_table
@@ -24,17 +33,15 @@ username = os.environ['PUN_USER_NAME']
 password = os.environ['PUN_USER_PASSWORD']
 
 # Link an engine to the database
-engine = create_engine('postgresql://{}:{}@localhost/entendrepreneur_db'.format(username, password))
+engine = create_engine('postgresql://{}:{}@localhost/entendrepreneur_db'.format(username, password), echo=True)
 
 # Load the base class, and use it to create the data tables
-Base = declarative_base()
 Base.metadata.create_all(engine) # create the tables
 print 'Finished creating all tables'
 
 # Link a session to the engine, and instantiate
 Session = sessionmaker(bind=engine)
 session = Session()
-
 
 # Populate the Word table, and commit the changes
 populate_word_table(session)
