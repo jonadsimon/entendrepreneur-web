@@ -2,7 +2,7 @@ import gensim
 import sys
 sys.path.insert(0, '../code')
 from global_constants import REPO_HOME, MAX_VOCAB
-from fasttext_vector_element_table import FasttextVectorElement
+from fasttext_vector_tables import FasttextVectorElement
 
 def populate_fasttext_vector_element_table(session):
     # Load the word vectors

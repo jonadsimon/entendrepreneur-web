@@ -2,7 +2,7 @@ import gensim
 import sys
 sys.path.insert(0, '../code')
 from global_constants import REPO_HOME, MAX_VOCAB
-from fasttext_grapheme_table import FasttextGrapheme
+from fasttext_vector_tables import FasttextGrapheme
 
 def populate_fasttext_grapheme_table(session):
     # Load the word vectors, and create a FasttextGrapheme object for each grapheme
