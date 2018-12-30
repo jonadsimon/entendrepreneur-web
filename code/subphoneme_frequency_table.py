@@ -1,7 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, ARRAY
-
-Base = declarative_base()
+from base import Base
 
 class SubphonemeFrequency(Base):
     __tablename__ = 'subphoneme_frequencies'
@@ -16,16 +15,16 @@ class SubphonemeFrequency(Base):
         return "<SubphonemeFrequency(phoneme='%s', frequency=%i, frequency_head=%i, frequency_tail=%i)>" % (self.phoneme, self.frequency, self.frequency_head, self.frequency_tail)
 
     @staticmethod
-	def get_subphoneme_frequency(this_phoneme, side='all'):
-		'''
+    def get_subphoneme_frequency(this_phoneme, side='all'):
+        '''
         Return the frequency of the phoneme
-		'''
+        '''
         subphoneme_frequency = SubphonemeFrequency.query.filter(phoneme==this_phoneme).one()
-		if side == 'head':
-			return subphoneme_frequency.frequency_head
-		elif side == 'tail':
-			return subphoneme_frequency.frequency_tail
-		elif side == 'all':
-			return subphoneme_frequency.frequency
-		else:
-			raise "Argument 'side' must be either 'head', 'tail', or 'all'"
+        if side == 'head':
+            return subphoneme_frequency.frequency_head
+        elif side == 'tail':
+            return subphoneme_frequency.frequency_tail
+        elif side == 'all':
+            return subphoneme_frequency.frequency
+        else:
+            raise "Argument 'side' must be either 'head', 'tail', or 'all'"

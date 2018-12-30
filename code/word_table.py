@@ -1,11 +1,7 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, ARRAY, JSON
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm.session import object_session
-
+from base import Base
 import numpy as np
-
-Base = declarative_base()
 
 class Word(Base): # will likely cause a name collision... "GraphemePhonemePair"
     __tablename__ = 'words'
@@ -24,19 +20,19 @@ class Word(Base): # will likely cause a name collision... "GraphemePhonemePair"
         Return the subgrapheme string (return_inds=False), or inclusive subgrapheme indices (return_inds=True),
         corresponding to the subphoneme starting at start_idx and ending at end_idx, inclusive
         '''
-		chunk_lengths = map(len, self.phoneme_chunks)
-		valid_end_inds = np.cumsum(chunk_lengths) - 1
-		valid_start_inds = np.cumsum(chunk_lengths) - chunk_lengths
+        chunk_lengths = map(len, self.phoneme_chunks)
+        valid_end_inds = np.cumsum(chunk_lengths) - 1
+        valid_start_inds = np.cumsum(chunk_lengths) - chunk_lengths
 
-		if start_idx not in valid_start_inds:
-			raise Exception('\'start_idx\' falls in the middle of a phoneme chunk')
+        if start_idx not in valid_start_inds:
+            raise Exception('\'start_idx\' falls in the middle of a phoneme chunk')
 
-		if end_idx not in valid_end_inds:
-			raise Exception('\'end_idx\' falls in the middle of a phoneme chunk')
+        if end_idx not in valid_end_inds:
+            raise Exception('\'end_idx\' falls in the middle of a phoneme chunk')
 
-		# Include null-graphs at the boundaries
-		start_chunk_idx = np.where(valid_start_inds == start_idx)[0].min()
-		end_chunk_idx = np.where(valid_end_inds == end_idx)[0].max()
+        # Include null-graphs at the boundaries
+        start_chunk_idx = np.where(valid_start_inds == start_idx)[0].min()
+        end_chunk_idx = np.where(valid_end_inds == end_idx)[0].max()
 
         if not return_inds:
             # Return the subgrapheme corresponding to the providing subphoneme indices
@@ -44,9 +40,9 @@ class Word(Base): # will likely cause a name collision... "GraphemePhonemePair"
             return subgrapheme
         else:
             # Return the subgrapheme *indices* corresponding to the providing subphoneme indices
-    		subgrapheme_start_idx = sum(map(len, self.grapheme_chunks[:start_chunk_idx]))
-    		subgrapheme_end_idx = sum(map(len, self.grapheme_chunks[:end_chunk_idx+1])) - 1
-    		return subgrapheme_start_idx, subgrapheme_end_idx
+            subgrapheme_start_idx = sum(map(len, self.grapheme_chunks[:start_chunk_idx]))
+            subgrapheme_end_idx = sum(map(len, self.grapheme_chunks[:end_chunk_idx+1])) - 1
+            return subgrapheme_start_idx, subgrapheme_end_idx
 
     def get_destressed_phoneme(self):
         '''
