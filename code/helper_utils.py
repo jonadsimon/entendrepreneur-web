@@ -113,13 +113,16 @@ def get_semantic_neighbor_graphemes(grapheme, session):
 
     query = '''
     SELECT
-        fv2.grapheme,
+        fg2.grapheme,
         SUM(fv1.value * fv2.value) / (SQRT(SUM(fv1.value * fv1.value)) * SQRT(SUM(fv2.value * fv2.value))) cosine_dist
-    FROM fasttext_vector_elements fv1
+    FROM fasttext_graphemes fg1
+    JOIN fasttext_vector_elements fv1
+        ON fg1.grapheme = :grapheme
+        AND fv1.grapheme_id = fg1.id
     JOIN fasttext_vector_elements fv2
-    ON
-        fv1.grapheme = :grapheme
-        AND fv1.index = fv2.index
+        ON fv1.index = fv2.index
+    JOIN fasttext_graphemes fg2
+        ON fv2.grapheme_id = fg2.id
     GROUP BY 1
     ORDER BY 2
     LIMIT :max_neighbors + 1

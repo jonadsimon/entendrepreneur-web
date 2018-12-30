@@ -27,13 +27,15 @@ from populate_subphoneme_frequency_table import populate_subphoneme_frequency_ta
 from populate_fasttext_grapheme_table import populate_fasttext_grapheme_table
 from populate_fasttext_vector_element_table import populate_fasttext_vector_element_table
 
+from time import time
+
 # Read postgres username and password from the OS environment
 import os
 username = os.environ['PUN_USER_NAME']
 password = os.environ['PUN_USER_PASSWORD']
 
 # Link an engine to the database
-engine = create_engine('postgresql://{}:{}@localhost/entendrepreneur_db'.format(username, password), echo=True)
+engine = create_engine('postgresql://{}:{}@localhost/entendrepreneur_db'.format(username, password))
 
 # Load the base class, and use it to create the data tables
 Base.metadata.create_all(engine) # create the tables
@@ -43,22 +45,28 @@ print 'Finished creating all tables'
 Session = sessionmaker(bind=engine)
 session = Session()
 
+
+start = time()
 # Populate the Word table, and commit the changes
 populate_word_table(session)
-print 'Finished populating Word table'
+print 'Finished populating Word table after {:.0f} seconds'.format(time()-start)
 
+start = time()
 # Populate the SubgraphemeFrequency table, and commit the changes
 populate_subgrapheme_frequency_table(session)
-print 'Finished populating SubgraphemeFrequency table'
+print 'Finished populating SubgraphemeFrequency table after {:.0f} seconds'.format(time()-start)
 
+start = time()
 # Populate the SubphonemeFrequency table, and commit the changes
 populate_subphoneme_frequency_table(session)
-print 'Finished populating SubphonemeFrequency table'
+print 'Finished populating SubphonemeFrequency table after {:.0f} seconds'.format(time()-start)
 
+start = time()
 # Populate the FasttextGrapheme table, and commit the changes
 populate_fasttext_grapheme_table(session)
-print 'Finished populating FasttextGrapheme table'
+print 'Finished populating FasttextGrapheme table after {:.0f} seconds'.format(time()-start)
 
+start = time()
 # Populate the FasttextVectorElement table, and commit the changes
 populate_fasttext_vector_element_table(session)
-print 'Finished populating FasttextVectorElement table'
+print 'Finished populating FasttextVectorElement table after {:.0f} seconds'.format(time()-start)
