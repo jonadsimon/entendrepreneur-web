@@ -1,11 +1,11 @@
-from sqlalchemy import Column, Integer, String, ARRAY
+from sqlalchemy import Column, Integer, String, ARRAY, Text
 from base import Base
 
 class SubphonemeFrequency(Base):
     __tablename__ = 'subphoneme_frequencies'
 
     id = Column(Integer, primary_key=True)
-    phoneme = Column(ARRAY(String))
+    phoneme = Column(ARRAY(Text)) # needs to be Text rather than String (i.e. varchar) to avoid typing issues
     frequency = Column(Integer, default=1)
     frequency_head = Column(Integer, default=1)
     frequency_tail = Column(Integer, default=1)
@@ -18,7 +18,11 @@ class SubphonemeFrequency(Base):
         '''
         Return the frequency of the phoneme
         '''
-        subphoneme_frequency = session.query(SubphonemeFrequency).filter(SubphonemeFrequency.phoneme==this_phoneme).one()
+        try:
+            subphoneme_frequency = session.query(SubphonemeFrequency).filter(SubphonemeFrequency.phoneme==this_phoneme).one()
+        except:
+            # if the phoneme is not present in the database i.e. because it is too long, return the default frequency of 1
+            return 1
         if side == 'head':
             return subphoneme_frequency.frequency_head
         elif side == 'tail':

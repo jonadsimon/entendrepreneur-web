@@ -119,14 +119,14 @@ class Rhyme(Pun):
 
 				# The phonemes contain a viable overlap, but the overlap cannot be brought into alignment with the first grapheme
 				try:
-					word1_grapheme_overlap_start_idx, word1_grapheme_overlap_end_idx = word1.grapheme_to_phoneme_alignment.subseq2_inds_to_subseq1_inds(word1_phoneme_overlap_start_idx, word1_phoneme_overlap_end_idx)
+					word1_grapheme_overlap_start_idx, word1_grapheme_overlap_end_idx = word1.get_subgrapheme_from_subphoneme_inds(word1_phoneme_overlap_start_idx, word1_phoneme_overlap_end_idx, return_inds=True)
 				except:
 					rhyme, status, message = None, 1, 'word1 phoneme could not be aligned with grapheme'
 					continue
 
 				# The phonemes contain a viable overlap, but the overlap cannot be brought into alignment with the second grapheme
 				try:
-					word2_grapheme_overlap_start_idx, word2_grapheme_overlap_end_idx = word2.grapheme_to_phoneme_alignment.subseq2_inds_to_subseq1_inds(word2_phoneme_overlap_start_idx, word2_phoneme_overlap_end_idx)
+					word2_grapheme_overlap_start_idx, word2_grapheme_overlap_end_idx = word2.get_subgrapheme_from_subphoneme_inds(word2_phoneme_overlap_start_idx, word2_phoneme_overlap_end_idx, return_inds=True)
 				except:
 					rhyme, status, message = None, 1, 'word2 phoneme could not be aligned with grapheme'
 					continue
@@ -134,8 +134,8 @@ class Rhyme(Pun):
 				# All alignments and min-char requirements have been met, so create the Rhyme, and return it
 
 				# Compute p(p_overlap, q_overlap) (see paper)
-				word1_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), 'tail', session)
-				word2_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), 'tail', session)
+				word1_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), session, 'tail')
+				word2_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), session, 'tail')
 				overlap_phoneme_prob = word1_tail_phoneme_prob * word2_tail_phoneme_prob
 
 				# Use POS + grapheme_length ordering rules to decide which word to put first

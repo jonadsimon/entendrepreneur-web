@@ -135,14 +135,14 @@ class Portmanteau(Pun):
 
 				# The phonemes contain a viable overlap, but the overlap cannot be brought into alignment with the first grapheme
 				try:
-					word1_grapheme_overlap_start_idx, word1_grapheme_overlap_end_idx = word1.grapheme_to_phoneme_alignment.subseq2_inds_to_subseq1_inds(word1_phoneme_overlap_start_idx, word1_phoneme_overlap_end_idx)
+					word1_grapheme_overlap_start_idx, word1_grapheme_overlap_end_idx = word1.get_subgrapheme_from_subphoneme_inds(word1_phoneme_overlap_start_idx, word1_phoneme_overlap_end_idx, return_inds=True)
 				except:
 					portmanteau, status, message = None, 1, 'word1 phoneme could not be aligned with grapheme'
 					continue
 
 				# The phonemes contain a viable overlap, but the overlap cannot be brought into alignment with the second grapheme
 				try:
-					word2_grapheme_overlap_start_idx, word2_grapheme_overlap_end_idx = word2.grapheme_to_phoneme_alignment.subseq2_inds_to_subseq1_inds(word2_phoneme_overlap_start_idx, word2_phoneme_overlap_end_idx)
+					word2_grapheme_overlap_start_idx, word2_grapheme_overlap_end_idx = word2.get_subgrapheme_from_subphoneme_inds(word2_phoneme_overlap_start_idx, word2_phoneme_overlap_end_idx, return_inds=True)
 				except:
 					portmanteau, status, message = None, 1, 'word2 phoneme could not be aligned with grapheme'
 					continue
@@ -153,11 +153,11 @@ class Portmanteau(Pun):
 				# i.e. choose the grapheme_portmanteau which maximizes p(grapheme1, grapheme2 | grapheme_portmanteau)
 				# See paper for details
 
-				word1_grapheme_nonoverlap = ''.join(word1.grapheme_to_phoneme_alignment.subseq2_to_subseq1(0, word1_phoneme_overlap_start_idx-1))
-				word2_grapheme_nonoverlap = ''.join(word2.grapheme_to_phoneme_alignment.subseq2_to_subseq1(word2_phoneme_overlap_end_idx+1, len(word2.phoneme)-1))
+				word1_grapheme_nonoverlap = ''.join(word1.get_subgrapheme_from_subphoneme_inds(0, word1_phoneme_overlap_start_idx-1, return_inds=False))
+				word2_grapheme_nonoverlap = ''.join(word2.get_subgrapheme_from_subphoneme_inds(word2_phoneme_overlap_end_idx+1, len(word2.phoneme)-1, return_inds=False))
 
-				word1_prob_given_dangling_graphs = cls.get_prob_word_given_subgrapheme(word1_grapheme_nonoverlap, 'head', session)
-				word2_prob_given_dangling_graphs = cls.get_prob_word_given_subgrapheme(word2_grapheme_nonoverlap, 'tail', session)
+				word1_prob_given_dangling_graphs = cls.get_prob_word_given_subgrapheme(word1_grapheme_nonoverlap, session, 'head')
+				word2_prob_given_dangling_graphs = cls.get_prob_word_given_subgrapheme(word2_grapheme_nonoverlap, session, 'tail')
 
 				grapheme_portmanteau1 = word1.grapheme + word2_grapheme_nonoverlap
 				grapheme_portmanteau2 = word1_grapheme_nonoverlap + word2.grapheme
@@ -172,8 +172,8 @@ class Portmanteau(Pun):
 					phoneme_portmanteau1, phoneme_portmanteau2 = phoneme_portmanteau2, phoneme_portmanteau1
 
 				# Compute p(p_overlap, q_overlap) (see paper)
-				word1_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), 'tail', session)
-				word2_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), 'head', session)
+				word1_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), session, 'tail')
+				word2_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), session, 'head')
 				overlap_phoneme_prob = word1_overlap_phoneme_prob * word2_overlap_phoneme_prob
 
 				# Instantiate the constructed portmanteau, and return it

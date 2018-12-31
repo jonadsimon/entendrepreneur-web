@@ -46,7 +46,7 @@ if __name__ == '__main__':
             # Find the Word objects corresponding to each of the semantic neighbors
             start = time()
             nearest_words1 = session.query(Word).filter(Word.grapheme.in_(nearest_graphemes1)).all()
-            nearest_words2 = session.query(Word).filter(Word.grapheme.in_(nearest_graphemes1)).all()
+            nearest_words2 = session.query(Word).filter(Word.grapheme.in_(nearest_graphemes2)).all()
             print 'Nearest-neighbor graphemes to words: {:.2f}sec'.format(time()-start)
         else: # if running in test mode, use pre-selected inputs
             grapheme1, grapheme2 = parse_input(TEST_INPUT)
