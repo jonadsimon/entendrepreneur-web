@@ -7,7 +7,7 @@ from base import Base
 from word_table import Word
 from subgrapheme_frequency_table import SubgraphemeFrequency
 from subphoneme_frequency_table import SubphonemeFrequency
-from fasttext_vector_tables import FasttextGrapheme, FasttextVectorElement
+from fasttext_vector_table import FasttextVector
 
 # Read postgres username and password from the OS environment
 import os

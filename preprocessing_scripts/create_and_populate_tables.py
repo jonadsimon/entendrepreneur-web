@@ -10,7 +10,6 @@
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
 
 import sys
 sys.path.insert(0, '../code') # need to add the code path for other imports to work
@@ -19,13 +18,12 @@ from base import Base
 from word_table import Word
 from subgrapheme_frequency_table import SubgraphemeFrequency
 from subphoneme_frequency_table import SubphonemeFrequency
-from fasttext_vector_tables import FasttextGrapheme, FasttextVectorElement
+from fasttext_vector_table import FasttextVector
 
 from populate_word_table import populate_word_table
 from populate_subgrapheme_frequency_table import populate_subgrapheme_frequency_table
 from populate_subphoneme_frequency_table import populate_subphoneme_frequency_table
-from populate_fasttext_grapheme_table import populate_fasttext_grapheme_table
-from populate_fasttext_vector_element_table import populate_fasttext_vector_element_table
+from populate_fasttext_vector_table import populate_fasttext_vector_table
 
 from time import time
 
@@ -62,11 +60,6 @@ populate_subphoneme_frequency_table(session)
 print 'Finished populating SubphonemeFrequency table after {:.0f} seconds'.format(time()-start)
 
 start = time()
-# Populate the FasttextGrapheme table, and commit the changes
-populate_fasttext_grapheme_table(session)
-print 'Finished populating FasttextGrapheme table after {:.0f} seconds'.format(time()-start)
-
-start = time()
-# Populate the FasttextVectorElement table, and commit the changes
-populate_fasttext_vector_element_table(session)
-print 'Finished populating FasttextVectorElement table after {:.0f} seconds'.format(time()-start)
+# Populate the FasttextVector table, and commit the changes
+populate_fasttext_vector_table(session)
+print 'Finished populating FasttextVector table after {:.0f} seconds'.format(time()-start)

@@ -5,6 +5,7 @@ from nltk.stem.porter import PorterStemmer
 from portmanteau import Portmanteau
 from rhyme import Rhyme
 from global_constants import MAX_NEIGHBORS, NEAR_MISS_VOWELS, NEAR_MISS_CONSONANTS
+from fasttext_vector_table import FasttextVector
 import io
 
 def parse_options(args):
@@ -51,8 +52,8 @@ def validate_input(input_string, session):
         grapheme2_alternatives = alternative_grapheme_capitalizations(grapheme2)
 
         # Each grapheme itself or one of its "alternative_grapheme_capitalizations" must exists in the FastText corpus
-        grapheme1_exists = session.query(FasttextGrapheme).filter(FasttextGrapheme.grapheme.in_(grapheme1_alternatives)).all() != []
-        grapheme2_exists = session.query(FasttextGrapheme).filter(FasttextGrapheme.grapheme.in_(grapheme2_alternatives)).all() != []
+        grapheme1_exists = session.query(FasttextVector).filter(FasttextVector.grapheme.in_(grapheme1_alternatives)).all() != []
+        grapheme2_exists = session.query(FasttextVector).filter(FasttextVector.grapheme.in_(grapheme2_alternatives)).all() != []
 
         # Return the appropriate error if either of the graphemes cannot does not exist in FastText, else return status=0
         if not grapheme1_exists and grapheme2_exists:
@@ -115,22 +116,21 @@ def get_semantic_neighbor_graphemes(grapheme, session):
     so just use 'execute' to run the raw SQL
     '''
 
+    fv1_dot_fv2 = ' + '.join(["fv1.v{}*fv2.v{}".format(i+1,i+1) for i in range(300)])
+    fv1_dot_fv1 = ' + '.join(["fv1.v{}*fv1.v{}".format(i+1,i+1) for i in range(300)])
+    fv2_dot_fv2 = ' + '.join(["fv2.v{}*fv2.v{}".format(i+1,i+1) for i in range(300)])
+
     query = '''
     SELECT
-        fg2.grapheme,
-        SUM(fv1.value * fv2.value) / (SQRT(SUM(fv1.value * fv1.value)) * SQRT(SUM(fv2.value * fv2.value))) cosine_dist
-    FROM fasttext_graphemes fg1
-    JOIN fasttext_vector_elements fv1
-        ON fg1.grapheme = :grapheme
-        AND fv1.grapheme_id = fg1.id
-    JOIN fasttext_vector_elements fv2
-        ON fv1.index = fv2.index
-    JOIN fasttext_graphemes fg2
-        ON fv2.grapheme_id = fg2.id
-    GROUP BY 1
-    ORDER BY 2
+        fv2.grapheme,
+        ABS({}) / SQRT({}*{}) cosine_similarity
+    FROM fasttext_vectors fv1
+    JOIN fasttext_vectors fv2
+    ON fv1.grapheme = :grapheme
+    ORDER BY 2 DESC
     LIMIT :max_neighbors + 1
-    '''
+    '''.format(fv1_dot_fv2, fv1_dot_fv1, fv2_dot_fv2)
+
     result = session.execute(query, {'grapheme': grapheme, 'max_neighbors': MAX_NEIGHBORS}) # pass in query params
 
     fasttext_neighbor_graphemes = [row['grapheme'] for row in result]
