@@ -1,11 +1,11 @@
-from sqlalchemy import Column, String, Float
-from sqlalchemy.ext.indexable import index_property
+from sqlalchemy import Column, Integer, String, Float
 from base import Base
 
 class FasttextVector(Base):
     __tablename__ = 'fasttext_vectors'
 
-    grapheme = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True)
+    grapheme = Column(String, index=True, unique=True)
     v1 = Column(Float)
     v2 = Column(Float)
     v3 = Column(Float)

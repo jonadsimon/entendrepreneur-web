@@ -117,19 +117,17 @@ def get_semantic_neighbor_graphemes(grapheme, session):
     '''
 
     fv1_dot_fv2 = ' + '.join(["fv1.v{}*fv2.v{}".format(i+1,i+1) for i in range(300)])
-    fv1_dot_fv1 = ' + '.join(["fv1.v{}*fv1.v{}".format(i+1,i+1) for i in range(300)])
-    fv2_dot_fv2 = ' + '.join(["fv2.v{}*fv2.v{}".format(i+1,i+1) for i in range(300)])
 
     query = '''
     SELECT
         fv2.grapheme,
-        ABS({}) / SQRT({}*{}) cosine_similarity
+        ({}) cosine_similarity
     FROM fasttext_vectors fv1
     JOIN fasttext_vectors fv2
     ON fv1.grapheme = :grapheme
     ORDER BY 2 DESC
     LIMIT :max_neighbors + 1
-    '''.format(fv1_dot_fv2, fv1_dot_fv1, fv2_dot_fv2)
+    '''.format(fv1_dot_fv2)
 
     result = session.execute(query, {'grapheme': grapheme, 'max_neighbors': MAX_NEIGHBORS}) # pass in query params
 

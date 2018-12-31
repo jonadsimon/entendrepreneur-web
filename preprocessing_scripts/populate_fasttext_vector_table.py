@@ -25,7 +25,7 @@ def populate_fasttext_vector_table(session):
 
         # Running into out-of-memory errors storing so many objects in memory,
         # so dump the objects into the db every 1000 vectors, and clear the accumulated cache
-        if grapheme_idx % 1000 == 0 and grapheme_idx > 0:
+        if grapheme_idx % 5000 == 0 and grapheme_idx > 0:
             print 'Finished processing vector {}'.format(grapheme_idx)
             session.add_all(fasttext_vector_list)
             session.commit()

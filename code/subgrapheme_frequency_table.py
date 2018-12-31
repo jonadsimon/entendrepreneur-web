@@ -5,7 +5,7 @@ class SubgraphemeFrequency(Base):
     __tablename__ = 'subgrapheme_frequencies'
 
     id = Column(Integer, primary_key=True)
-    grapheme = Column(Text) # needs to be Text rather than String (i.e. varchar) to avoid typing issues
+    grapheme = Column(Text, index=True, unique=True) # needs to be Text rather than String (i.e. varchar) to avoid typing issues
     frequency = Column(Integer, default=1)
     frequency_head = Column(Integer, default=1)
     frequency_tail = Column(Integer, default=1)
