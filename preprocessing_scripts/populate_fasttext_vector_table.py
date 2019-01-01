@@ -8,7 +8,7 @@ from fasttext_vector_table import FasttextVector
 def populate_fasttext_vector_table(session):
     # Load the word vectors
     start = time()
-    fasttext_model = gensim.models.KeyedVectors.load_word2vec_format(REPO_HOME+'data/word_vectors/wiki-news-300d-1M.vec', limit=MAX_VOCAB)
+    fasttext_model = gensim.models.KeyedVectors.load_word2vec_format(REPO_HOME+'data/word_vectors/wiki-news-150d-300K.vec')
     print 'Finished loading fasttext_model into memory: {:.0f} seconds'.format(time()-start)
 
     # Create a FasttextVector object for each word vector
@@ -19,7 +19,7 @@ def populate_fasttext_vector_table(session):
 
         # Will only be using vectors to compute dot products, so normalize in advance to save on computation
         normalized_unit_vec = gensim.matutils.unitvec(fasttext_model.get_vector(grapheme)).astype(float)
-        new_fasttext_vector_args.update({'v{}'.format(i+1) : normalized_unit_vec[i] for i in range(300)})
+        new_fasttext_vector_args.update({'v{}'.format(i+1) : normalized_unit_vec[i] for i in range(150)})
         new_fasttext_vector = FasttextVector(**new_fasttext_vector_args)
         fasttext_vector_list.append(new_fasttext_vector)
 

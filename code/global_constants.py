@@ -18,7 +18,7 @@ MAX_VOCAB = 300000
 # TEST_INPUT = 'rosemary marriott'
 TEST_INPUT = 'master blaster'
 
-REPO_HOME = '/Users/jonsimon/Code/pun_generator/entendrepreneur/'
+REPO_HOME = '/Users/jonsimon/Code/pun_generator/entendrepreneur-web/'
 
 POS_ORDERING = {
     ('n','v'): 'keep',

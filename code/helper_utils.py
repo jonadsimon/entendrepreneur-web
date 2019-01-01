@@ -116,7 +116,7 @@ def get_semantic_neighbor_graphemes(grapheme, session):
     so just use 'execute' to run the raw SQL
     '''
 
-    fv1_dot_fv2 = ' + '.join(["fv1.v{}*fv2.v{}".format(i+1,i+1) for i in range(300)])
+    fv1_dot_fv2 = ' + '.join(["fv1.v{}*fv2.v{}".format(i+1,i+1) for i in range(150)])
 
     query = '''
     SELECT
