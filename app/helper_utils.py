@@ -1,28 +1,13 @@
-from collections import defaultdict
+from sqlalchemy import text
 from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 from portmanteau import Portmanteau
 from rhyme import Rhyme
-from global_constants import MAX_NEIGHBORS, NEAR_MISS_VOWELS, NEAR_MISS_CONSONANTS
-from fasttext_vector_table import FasttextVector
-import io
+from global_constants import MAX_NEIGHBORS
+from app import db
 
-def parse_options(args):
-    '''
-    Parse and return the program option provided by the user at runtime.
-    All provided option arguments are preceded by the '--' string.
-    Currently the options supported are:
-        * --test : runs the script once with inputs provided by the TEST_INPUT string in global_constants.py
-        * --debug : prints additional information about each Portmanteau and Rhyme when generating output
-    '''
-    options = defaultdict(bool)
-    for arg in args:
-        if arg[:2] == '--':
-           options[arg[2:]] = True
-    return options
-
-def alternative_grapheme_capitalizations(grapheme):
+def alternate_capitalizations(grapheme):
     '''
     For a given grapheme, returns a list containing:
     1) the grapheme as-is
@@ -36,40 +21,6 @@ def alternative_grapheme_capitalizations(grapheme):
     elif len(grapheme) > 1:
         capitalization_alternatives.append(grapheme[0].upper()+grapheme[1:].lower())
     return capitalization_alternatives
-
-def validate_input(input_string, session):
-    '''
-    Verify that the user-provided input string is comprised of two graphemes, and that both graphemes are present in FastText
-    '''
-    if type(input_string) is not str or len(input_string.split()) != 2:
-        status = 1
-        message = 'Error: Input should be of the form "[word1] [word2]"'
-    else:
-        grapheme1, grapheme2 = input_string.split()
-
-        # Get lists of possible alternative capitalizations for each grapheme
-        grapheme1_alternatives = alternative_grapheme_capitalizations(grapheme1)
-        grapheme2_alternatives = alternative_grapheme_capitalizations(grapheme2)
-
-        # Each grapheme itself or one of its "alternative_grapheme_capitalizations" must exists in the FastText corpus
-        grapheme1_exists = session.query(FasttextVector).filter(FasttextVector.grapheme.in_(grapheme1_alternatives)).all() != []
-        grapheme2_exists = session.query(FasttextVector).filter(FasttextVector.grapheme.in_(grapheme2_alternatives)).all() != []
-
-        # Return the appropriate error if either of the graphemes cannot does not exist in FastText, else return status=0
-        if not grapheme1_exists and grapheme2_exists:
-            status = 1
-            message = "Error: '{}' is not a recognized word, please check the spelling".format(grapheme1)
-        elif grapheme1_exists and not grapheme2_exists:
-            status = 1
-            message = "Error: '{}' is not a recognized word, please check the spelling".format(grapheme2)
-        elif not grapheme1_exists and not grapheme2_exists:
-            status = 1
-            message = "Error: neither '{}' nor '{}' is a recognized word, please check the spelling".format(grapheme1, grapheme2)
-        else:
-            status = 0
-            message = ''
-
-    return status, message
 
 def get_shortest_lemma(grapheme, lemmatizer=WordNetLemmatizer(), stemmer=PorterStemmer()):
     '''
@@ -107,7 +58,8 @@ def get_shortest_lemma(grapheme, lemmatizer=WordNetLemmatizer(), stemmer=PorterS
 
     return shortest_lemma
 
-def get_semantic_neighbor_graphemes(grapheme, session):
+# TODO: refactor so this function is a classmethod of FasttextVector
+def get_semantic_neighbor_graphemes(grapheme):
     '''
     Computes the cosine distance of the input grapheme's word vector with every other word vector in FasttextVectorElement,
     and returns the nearest MAX_NEIGHBORS many graphemes, along with the grapheme itself
@@ -129,7 +81,8 @@ def get_semantic_neighbor_graphemes(grapheme, session):
     LIMIT :max_neighbors + 1
     '''.format(fv1_dot_fv2)
 
-    result = session.execute(query, {'grapheme': grapheme, 'max_neighbors': MAX_NEIGHBORS}) # pass in query params
+    # Pass in the parameterized query params
+    result = db.engine.execute(text(query), grapheme=grapheme, max_neighbors=MAX_NEIGHBORS)
 
     fasttext_neighbor_graphemes = [row['grapheme'] for row in result]
 
@@ -145,13 +98,12 @@ def get_semantic_neighbor_graphemes(grapheme, session):
     # 1) downcase
     # 2) find shortest lemma or valid stem
     # 3) deduplicate
-    wnl = WordNetLemmatizer()
-    semantic_neighbor_graphemes = map(lambda g: get_shortest_lemma(g.lower(), wnl), fasttext_neighbor_graphemes_clean)
+    semantic_neighbor_graphemes = map(lambda g: get_shortest_lemma(g.lower()), fasttext_neighbor_graphemes_clean)
     semantic_neighbor_graphemes = set(semantic_neighbor_graphemes)
 
     return semantic_neighbor_graphemes
 
-def get_portmanteaus(words1_neighbors, words2_neighbors, session):
+def get_portmanteaus(words1_neighbors, words2_neighbors):
     '''
     Given a two lists of words, attempt to construct portmanteaus out of each of the
     |words1_neighbors| x |words2_neighbors| many word pairs. Order the generated portmanteaus
@@ -165,11 +117,11 @@ def get_portmanteaus(words1_neighbors, words2_neighbors, session):
             if neighbor1.grapheme == neighbor2.grapheme:
                 continue
             # Generate forward-ordered portmanteau
-            portmanteau, status, message = Portmanteau.get_pun(neighbor1, neighbor2, session)
+            portmanteau, status, message = Portmanteau.get_pun(neighbor1, neighbor2)
             if status == 0:
                 portmanteau_set.add(portmanteau)
             # Generate reverse-ordered portmanteau
-            portmanteau, status, message = Portmanteau.get_pun(neighbor2, neighbor1, session)
+            portmanteau, status, message = Portmanteau.get_pun(neighbor2, neighbor1)
             if status == 0:
                 portmanteau_set.add(portmanteau)
 
@@ -179,7 +131,7 @@ def get_portmanteaus(words1_neighbors, words2_neighbors, session):
 
     return portmanteau_list
 
-def get_rhymes(words1_neighbors, words2_neighbors, session):
+def get_rhymes(words1_neighbors, words2_neighbors):
     '''
     Given a two lists of words, attempt to construct rhyme out of each of the
     |words1_neighbors| x |words2_neighbors| many word pairs. Order the generated rhymes
@@ -194,7 +146,7 @@ def get_rhymes(words1_neighbors, words2_neighbors, session):
                 continue
             # Generate the rhyme for only a single ordering, if the words need to be flipped
             # for quality reasons, that's handled within the 'get_rhyme' function
-            rhyme, status, message = Rhyme.get_pun(neighbor1, neighbor2, session)
+            rhyme, status, message = Rhyme.get_pun(neighbor1, neighbor2)
             if status == 0:
                 rhyme_set.add(rhyme)
 

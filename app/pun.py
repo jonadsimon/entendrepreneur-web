@@ -1,7 +1,6 @@
 from global_constants import *
 import numpy as np
-from subgrapheme_frequency_table import SubgraphemeFrequency
-from subphoneme_frequency_table import SubphonemeFrequency
+from models import SubgraphemeFrequency, SubphonemeFrequency
 
 class Pun(object):
 	'''
@@ -24,25 +23,25 @@ class Pun(object):
 	MIN_NON_OVERLAP_PHONES = 1
 
 	@classmethod
-	def get_pun(cls, word1, word2, session):
+	def get_pun(cls, word1, word2):
 		'''
 		Implemented in the derived class
 		'''
 		pass
 
 	@staticmethod
-	def get_prob_word_given_subgrapheme(subgrapheme, session, side):
+	def get_prob_word_given_subgrapheme(subgrapheme, side):
 		'''
 		Probability of a word given that it starts with/end with/contains a given grapheme
 		'''
-		return 1.0 / SubgraphemeFrequency.get_subgrapheme_frequency(subgrapheme, session, side)
+		return 1.0 / SubgraphemeFrequency.get_subgrapheme_frequency(subgrapheme, side)
 
 	@staticmethod
-	def get_subphoneme_prob(subphoneme, session, side):
+	def get_subphoneme_prob(subphoneme, side):
 		'''
 		Probability of any word starting with/ending with/containing a given phoneme
 		'''
-		return 1.0 * SubphonemeFrequency.get_subphoneme_frequency(subphoneme, session, side) / VOCAB_SIZE
+		return 1.0 * SubphonemeFrequency.get_subphoneme_frequency(subphoneme, side) / VOCAB_SIZE
 
 	@staticmethod
 	def get_phone_distance(phone1, phone2):

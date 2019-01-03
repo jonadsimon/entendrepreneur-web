@@ -1,0 +1,15 @@
+<html>
+    <head>
+      <title>Entendrepreneur Pun Generator</title>
+    </head>
+    <body>
+        <h1>Portmanteaus</h1>
+        {% for portmanteau in results.portmanteaus %}
+        <div><p>{{ portmanteau }}</p></div>
+        {% endfor %}
+        <h1>Rhymes</h1>
+        {% for rhyme in results.rhymes %}
+        <div><p>{{ rhyme }}</p></div>
+        {% endfor %}
+    </body>
+</html>
