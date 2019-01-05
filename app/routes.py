@@ -28,23 +28,23 @@ def get_puns_from_form_data(form):
     return {'portmanteaus': map(lambda x: x.__str__(), portmanteaus[:MAX_PORTMANTEAUS]), 'rhymes': map(lambda x: x.__str__(), rhymes[:MAX_RHYMES])}
 
 @app.route('/')
-@app.route('/generate_puns', methods=['GET', 'POST']) # TODO : remove this in favor of base url
-def generate_puns():
+def home():
+    '''
+    Always redirect from 'home' to 'pun_generator' since there's nothing else there
+    '''
+    return redirect(url_for('pun_generator'))
+
+@app.route('/pun_generator', methods=['GET', 'POST'])
+def pun_generator():
     '''
     Display the results, and continue prompting for input
     '''
+    # Get the user inputs from the form
     form = InputWords()
     if form.validate_on_submit():
-        # This may crash if invalid inputs are provided... we'll see
+        # If the inputs are valid, compute and store the puns
         session['results'] = get_puns_from_form_data(form)
-        # Pass the results on to 'results'
-        return redirect(url_for('results'))
-    return render_template('generate_puns.html', form=form)
-
-@app.route('/results', methods=['GET', 'POST'])
-def results():
-    '''
-    Display the results, and continue prompting for input
-    '''
-    # Pass the results on to
-    return render_template('results.html', results=session['results'])
+        # rerender the page with the pun results
+        return render_template('pun_generator.html', form=form, results=session['results'])
+    # If the submit button was not clicked, or the results were not valid, render the page as-is
+    return render_template('pun_generator.html', form=form)

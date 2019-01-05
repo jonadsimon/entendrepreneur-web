@@ -3,7 +3,7 @@
       <title>Entendrepreneur Pun Generator</title>
     </head>
     <body>
-        <h1>Generate Puns</h1>
+        <h1>Pun Generator</h1>
         <form action="" method="post" novalidate>
             {{ form.hidden_tag() }}
             <p>
@@ -23,5 +23,23 @@
             <p>{{ form.submit() }}</p>
             {% block content %}{% endblock %}
         </form>
+        {% if results %}
+        {% if results.portmanteaus %}
+        <h2>Portmanteaus</h2>
+        <p>
+          {% for portmanteau in results.portmanteaus %}
+          {{ portmanteau }}<br>
+          {% endfor %}
+        </p>
+        {% endif %}
+        {% if results.rhymes %}
+        <h2>Rhymes</h2>
+        <p>
+          {% for rhyme in results.rhymes %}
+          {{ rhyme }}<br>
+          {% endfor %}
+        </p>
+        {% endif %}
+        {% endif %}
     </body>
 </html>
