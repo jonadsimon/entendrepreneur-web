@@ -1,9 +1,9 @@
 import gensim
 import numpy as np
 import sys
-sys.path.insert(0, '../code')
+sys.path.insert(0, '../app')
 from global_constants import REPO_HOME, MAX_VOCAB
-from sklearn.decomposition import PCA, IncrementalPCA
+from sklearn.decomposition import PCA
 from time import time
 
 def post_processing_algorithm(X, D):

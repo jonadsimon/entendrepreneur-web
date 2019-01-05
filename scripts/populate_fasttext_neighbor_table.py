@@ -1,0 +1,29 @@
+from time import time
+import gensim
+import sys
+sys.path.insert(0, '../app')
+from global_constants import REPO_HOME, MAX_VOCAB
+from fasttext_neighbor_table import FasttextNeighbor
+import cPickle as pkl
+
+def populate_fasttext_neighbor_table(session):
+    # Load the precomputed grapheme neighbors
+    start = time()
+    grapheme_neighbor_dict = pkl.load(open(REPO_HOME+'data/word_vectors/top100_neighbors_300k.pkl', 'rb'))
+    print 'Finished loading fasttext_neighbors into memory: {:.0f} seconds'.format(time()-start)
+
+    # Create a FasttextNeighbor object for each grapheme
+    start = time()
+    fasttext_neighbor_list = []
+    for grapheme_idx, (grapheme, neighbors) in enumerate(grapheme_neighbor_dict.iteritems()):
+        new_fasttext_neighbor = FasttextNeighbor(grapheme=grapheme, neighbors=neighbors)
+        fasttext_neighbor_list.append(new_fasttext_neighbor)
+        # Running into out-of-memory errors storing so many objects in memory,
+        # so dump the objects into the db every 50000 graphemes, and clear the accumulated cache
+        if (grapheme_idx+1) % 50000 == 0:
+            print 'Finished processing grapheme {}'.format(grapheme_idx+1)
+            session.add_all(fasttext_neighbor_list)
+            session.commit()
+            fasttext_neighbor_list = []
+            print 'Finished committing grapheme {}'.format(grapheme_idx+1)
+            print 'Looping duration elapsed: {:.0f} seconds'.format(time()-start)

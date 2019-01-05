@@ -5,7 +5,7 @@ from nltk.stem.porter import PorterStemmer
 from portmanteau import Portmanteau
 from rhyme import Rhyme
 from global_constants import MAX_NEIGHBORS
-from app import db
+from app.models import FasttextNeighbor
 
 def alternate_capitalizations(grapheme):
     '''
@@ -61,30 +61,11 @@ def get_shortest_lemma(grapheme, lemmatizer=WordNetLemmatizer(), stemmer=PorterS
 # TODO: refactor so this function is a classmethod of FasttextVector
 def get_semantic_neighbor_graphemes(grapheme):
     '''
-    Computes the cosine distance of the input grapheme's word vector with every other word vector in FasttextVectorElement,
-    and returns the nearest MAX_NEIGHBORS many graphemes, along with the grapheme itself
-
-    Very difficult to structure this query in SQLAlchemy's query meta-language,
-    so just use 'execute' to run the raw SQL
+    Fetch the precomputed n=100 nearest neighbors to the given grapheme
     '''
 
-    fv1_dot_fv2 = ' + '.join(["fv1.v{}*fv2.v{}".format(i+1,i+1) for i in range(150)])
-
-    query = '''
-    SELECT
-        fv2.grapheme,
-        ({}) cosine_similarity
-    FROM fasttext_vectors fv1
-    JOIN fasttext_vectors fv2
-    ON fv1.grapheme = :grapheme
-    ORDER BY 2 DESC
-    LIMIT :max_neighbors + 1
-    '''.format(fv1_dot_fv2)
-
-    # Pass in the parameterized query params
-    result = db.engine.execute(text(query), grapheme=grapheme, max_neighbors=MAX_NEIGHBORS)
-
-    fasttext_neighbor_graphemes = [row['grapheme'] for row in result]
+    # Precomputed top-100 neighbors
+    fasttext_neighbor_graphemes = FasttextNeighbor.query.filter_by(grapheme=grapheme).first().neighbors
 
     # FastText sometimes returns funky unicode characters like umlouts, so make sure to catch/discard these before continuing
     fasttext_neighbor_graphemes_clean = []

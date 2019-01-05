@@ -10,20 +10,19 @@
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from base import Base
 
 import sys
-sys.path.insert(0, '../code') # need to add the code path for other imports to work
+sys.path.insert(0, '../app') # need to add the code path for other imports to work
 # Import tables up front so that table creation works correctly
-from base import Base
-from word_table import Word
-from subgrapheme_frequency_table import SubgraphemeFrequency
-from subphoneme_frequency_table import SubphonemeFrequency
-from fasttext_vector_table import FasttextVector
+# from models import Word, SubgraphemeFrequency, SubphonemeFrequency, FasttextVector, FasttextNeighbor
+# from app import db
 
 from populate_word_table import populate_word_table
 from populate_subgrapheme_frequency_table import populate_subgrapheme_frequency_table
 from populate_subphoneme_frequency_table import populate_subphoneme_frequency_table
 from populate_fasttext_vector_table import populate_fasttext_vector_table
+from populate_fasttext_neighbor_table import populate_fasttext_neighbor_table
 
 from time import time
 
@@ -63,3 +62,8 @@ start = time()
 # Populate the FasttextVector table, and commit the changes
 populate_fasttext_vector_table(session)
 print 'Finished populating FasttextVector table after {:.0f} seconds'.format(time()-start)
+
+start = time()
+# Populate the FasttextNeighbor table, and commit the changes
+populate_fasttext_neighbor_table(session)
+print 'Finished populating FasttextNeighbor table after {:.0f} seconds'.format(time()-start)

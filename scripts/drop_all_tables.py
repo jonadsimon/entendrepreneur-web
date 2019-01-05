@@ -1,13 +1,14 @@
 from sqlalchemy import create_engine
 
 import sys
-sys.path.insert(0, '../code') # need to add the code path for other imports to work
+sys.path.insert(0, '../app') # need to add the code path for other imports to work
 # Import tables up front so that table deletion works correctly
 from base import Base
 from word_table import Word
 from subgrapheme_frequency_table import SubgraphemeFrequency
 from subphoneme_frequency_table import SubphonemeFrequency
 from fasttext_vector_table import FasttextVector
+from fasttext_neighbor_table import FasttextNeighbor
 
 # Read postgres username and password from the OS environment
 import os

@@ -1,7 +1,7 @@
 from nltk.corpus import cmudict
 from collections import defaultdict
 import sys
-sys.path.insert(0, '../code')
+sys.path.insert(0, '../app')
 from subgrapheme_frequency_table import SubgraphemeFrequency
 
 # CMU Pronouncing Dictionary

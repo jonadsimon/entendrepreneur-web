@@ -2,7 +2,7 @@ from app import db
 import numpy as np
 
 
-class Word(db.Model): # will likely cause a name collision... "GraphemePhonemePair"
+class Word(db.Model):
     __tablename__ = 'words'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -271,4 +271,15 @@ class FasttextVector(db.Model):
     v150 = db.Column(db.Float)
 
     def __repr__(self):
-        return "<FasttextVectorElement(grapheme_id=%i, v1=%d, v2=%d, ... , v150=%d)>" % (self.grapheme_id, self.v1, self.v2, self.v150)
+        return "<FasttextVector(grapheme_id=%i, v1=%d, v2=%d, ... , v150=%d)>" % (self.grapheme_id, self.v1, self.v2, self.v150)
+
+
+class FasttextNeighbor(db.Model):
+    __tablename__ = 'fasttext_neighbors'
+
+    id = db.Column(db.Integer, primary_key=True)
+    grapheme = db.Column(db.String, index=True, unique=True)
+    neighbors = db.Column(db.ARRAY(db.String))
+
+    def __repr__(self):
+        return "<FasttextNeighbor(grapheme='%s', neighbors=...)>" % (self.grapheme)

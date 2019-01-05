@@ -1,7 +1,7 @@
 import numpy as np
 from nltk.corpus import cmudict
 import sys
-sys.path.insert(0, '../code') # need to add the code path for other imports to work
+sys.path.insert(0, '../app') # need to add the code path for other imports to work
 from word_table import Word
 
 # Aligned pairs use the following syntax:
