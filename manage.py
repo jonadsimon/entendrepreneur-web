@@ -19,6 +19,7 @@ manager = Manager(app)
 def populate_tables():
     '''
     Pass in the Class instantiators directly to avoid import issues
+    Takes ~8min to run with the current 4 tables
     '''
     start = time()
     # Populate the Word table, and commit the changes

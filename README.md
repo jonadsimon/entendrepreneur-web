@@ -14,19 +14,51 @@ For additional details see the associated NeurIPS 2018 workshop paper: [Entendre
 
 Code was built on Mac OS 10.12.6 using Python 2.7.10
 
-Python Libraries:
-
-* **numpy** 1.15.4
-* **nltk** 3.3
-* **gensim** 3.6.0
-* **dill** 0.2.8.2
-
-Pre-trained Models and Corpora:
-
-* **FastText** wiki-news-300d-1M pretrained word vectors, downloadable via the [FastText website](https://fasttext.cc/docs/en/english-vectors.html)
-* **WordNet** corpus, downloadable via the [nltk interactive installer](http://www.nltk.org/data.html)
-* **CMU Pronouncing Dictionary** corpus, downloadable via the [nltk interactive installer](http://www.nltk.org/data.html)
-
 ## Usage
 
 Citable paper soon to be released on ArXiv.
+
+## Setup
+
+Install the required Python packages
+```
+> pip install -r requirements.txt
+```
+
+Download 'WordNet' and 'CMU Pronouncing Dictionary' via the nltk downloader (see [here](http://www.nltk.org/data.html)):
+```
+> python -m nltk.downloader wordnet
+> python -m nltk.downloader cmudict
+```
+
+Install Homebrew
+```
+> /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```
+
+Install Postgres
+```
+> brew services start postgresql
+```
+
+Setup Postgres db (see [here](https://www.codementor.io/engineerapart/getting-started-with-postgresql-on-mac-osx-are8jcopb))
+```
+> psql postgres
+> CREATE ROLE [USERNAME] WITH LOGIN PASSWORD '[PASSWORD]';
+> CREATE DATABASE entendrepreneur_db;
+```
+
+Export the credentials to `.bash_profile`
+```
+> echo "export PUN_DATABASE_URL=postgresql://[USERNAME]:[PASSWORD]@localhost/entendrepreneur_db" >> ~/.bash_profile
+> python -c "import os; print os.urandom(24).encode('hex')" | read var ; echo "export PUN_SECRET_KEY=$var" >> ~/.bash_profile
+> source ~/.bash_profile
+```
+
+Initialize the database and populate tables (takes ~10min)
+```
+> flask db init
+> flask db migrate -m 'create tables'
+> flask db upgrade
+> python manage.py populate_tables
+```
