@@ -1,8 +1,6 @@
 import numpy as np
 from nltk.corpus import cmudict
-import sys
-sys.path.insert(0, '../app') # need to add the code path for other imports to work
-from word_table import Word
+from app.global_constants import REPO_HOME
 
 # Aligned pairs use the following syntax:
 # 1) chunked graphemes/phonemes are divided by '|' symbols
@@ -65,13 +63,13 @@ def phoneme_chunks_to_stressed_phoneme_chunks(phoneme_chunks, grapheme):
     stressed_phoneme_chunks = [tuple(stressed_phoneme[start_idx:end_idx]) for (start_idx,end_idx) in idx_pairs]
     return stressed_phoneme_chunks, stressed_phoneme
 
-def populate_word_table(session):
+def populate_word_table(Word, db):
     '''
     Take the current db session as an argument, and populate the words table
     '''
 
     # Load the aligned grapheme/phoneme pairs
-    with open('../data/g2p_alignment/m2m_preprocessed_cmudict.txt.m-mAlign.2-2.delX.1-best.conYX.align') as infile:
+    with open(REPO_HOME+'data/g2p_alignment/m2m_preprocessed_cmudict.txt.m-mAlign.2-2.delX.1-best.conYX.align') as infile:
         aligned_grapheme_phoneme_pairs = [line.strip().split('\t') for line in infile.readlines()]
 
     # Transform the aligned grapheme/phoneme pairs to conform to the Word table schema
@@ -87,5 +85,5 @@ def populate_word_table(session):
         word_list.append(new_word)
 
     # Add the generated Word objects to the Word table, and commit the changes
-    session.add_all(word_list)
-    session.commit()
+    db.session.add_all(word_list)
+    db.session.commit()

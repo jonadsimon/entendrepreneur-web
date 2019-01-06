@@ -1,13 +1,10 @@
 from nltk.corpus import cmudict
 from collections import defaultdict
-import sys
-sys.path.insert(0, '../app')
-from subgrapheme_frequency_table import SubgraphemeFrequency
 
 # CMU Pronouncing Dictionary
 cmu_dict = cmudict.dict()
 
-def populate_subgrapheme_frequency_table(session):
+def populate_subgrapheme_frequency_table(SubgraphemeFrequency, db):
 
     # Counters for storing the frequencies of each subgrapheme
     # Smooth by using default value of 1 to avoid probability singularities when string is not present
@@ -37,5 +34,5 @@ def populate_subgrapheme_frequency_table(session):
         subgrapheme_frequency_list.append(new_subgrapheme_frequency)
 
     # Add the generated SubgraphemeFrequency objects to the SubgraphemeFrequency table, and commit the changes
-    session.add_all(subgrapheme_frequency_list)
-    session.commit()
+    db.session.add_all(subgrapheme_frequency_list)
+    db.session.commit()
