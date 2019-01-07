@@ -3,7 +3,7 @@
 body {
   display: grid;
   grid-template-columns: 35% 35%;
-  grid-template-rows: 18vw auto 9vw;
+  grid-template-rows: 16vw auto 9vw;
   grid-gap: 0.5em;
   justify-content: center;
 }
