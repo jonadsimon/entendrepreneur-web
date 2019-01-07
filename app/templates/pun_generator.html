@@ -1,45 +1,63 @@
-<html>
-    <head>
-      <title>Entendrepreneur Pun Generator</title>
-    </head>
-    <body>
-        <h1>Pun Generator</h1>
-        <form action="" method="post" novalidate>
-            {{ form.hidden_tag() }}
-            <p>
-                {{ form.word1.label }}<br>
-                {{ form.word1(size=32) }}
-                {% for error in form.word1.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-                {% endfor %}
-            </p>
-            <p>
-                {{ form.word2.label }}<br>
-                {{ form.word2(size=32) }}
-                {% for error in form.word2.errors %}
-                <span style="color: red;">[{{ error }}]</span>
-                {% endfor %}
-            </p>
-            <p>{{ form.submit() }}</p>
-            {% block content %}{% endblock %}
-        </form>
-        {% if results %}
-        {% if results.portmanteaus %}
-        <h2>Portmanteaus</h2>
-        <p>
-          {% for portmanteau in results.portmanteaus %}
-          {{ portmanteau }}<br>
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-blue-grey.css">
+
+<head>
+  <title>Entendrepreneur Portmanteau & Rhyme Generator</title>
+  <link href="../static/style.css" rel="stylesheet">
+</head>
+<header class="w3-theme-l3">
+  <h1>Portmanteau & Rhyme Generator</h1>
+  <form action="" method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <p>
+          {{ form.word1.label }}<br>
+          {{ form.word1(size=32) }}
+          {% for error in form.word1.errors %}
+          <span style="color: red;">[{{ error }}]</span>
           {% endfor %}
-        </p>
-        {% endif %}
-        {% if results.rhymes %}
-        <h2>Rhymes</h2>
-        <p>
-          {% for rhyme in results.rhymes %}
-          {{ rhyme }}<br>
+      </p>
+      <p>
+          {{ form.word2.label }}<br>
+          {{ form.word2(size=32) }}
+          {% for error in form.word2.errors %}
+          <span style="color: red;">[{{ error }}]</span>
           {% endfor %}
-        </p>
-        {% endif %}
-        {% endif %}
-    </body>
-</html>
+      </p>
+      <p>{{ form.submit() }}</p>
+    </form>
+</header>
+{% if results %}
+<main class="w3-theme-l4">
+  <h2>Portmanteaus</h2>
+  {% if results.portmanteaus %}
+    <ul style="list-style-type:none">
+    {% for portmanteau in results.portmanteaus %}
+    <li><p>{{ portmanteau }}</p></li>
+    {% endfor %}
+    </ul>
+  {% else %}
+    No portmanteaus found &#x1F641;
+  {% endif %}
+</main>
+<aside class="w3-theme-l4">
+  <h2>Rhymes</h2>
+  {% if results.rhymes %}
+    <ul style="list-style-type:none">
+    {% for rhyme in results.rhymes %}
+    <li><p>{{ rhyme }}</p></li>
+    {% endfor %}
+    </ul>
+  {% else %}
+    No rhymes found &#x1F641;
+  {% endif %}
+</aside>
+{% else %} <!-- null fields are necessary for auto-spaceing to work properly -->
+<main>
+</main>
+<aside>
+</aside>
+{% endif %}
+<footer class="w3-theme-l2">
+  <p>
+  The code for generating the portmanteaus and rhymes can be found at the <a href="https://github.com/jonadsimon/entendrepreneur-web">entendrepreneur-web</a> github  repository. This algorithm was presented at the NeurIPS 2018 Creativity and Design Workshop under the title "Entendrepreneur: Generating Humorous Portmanteaus using Word-Embeddings", the associated conference paper can be found <a href="https://nips2018creativity.github.io/doc/entendrepreneur.pdf">here</a>. All credit for the code and the algorithm goes to Jonathan Simon. Please direct any questions to <a href="mailto:jonadsimon@gmail.com">jonadsimon@gmail.com</a>.
+  </p>
+</footer>
