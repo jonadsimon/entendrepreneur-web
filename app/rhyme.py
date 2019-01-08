@@ -133,8 +133,10 @@ class Rhyme(Pun):
 				# All alignments and min-char requirements have been met, so create the Rhyme, and return it
 
 				# Compute p(p_overlap, q_overlap) (see paper)
+				start = time()
 				word1_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), 'tail')
 				word2_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), 'tail')
+				print "Subphoneme proba (2x): {:.2f} seconds".format(time()-start)
 				overlap_phoneme_prob = word1_tail_phoneme_prob * word2_tail_phoneme_prob
 
 				# Use POS + grapheme_length ordering rules to decide which word to put first

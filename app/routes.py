@@ -19,11 +19,15 @@ def get_puns_from_form_data(form):
     nearest_words2 = Word.query.filter(Word.grapheme.in_(nearest_graphemes2)).all()
     print "Word conversion: {:.2f} seconds".format(time()-start)
 
-    # Generate the ordered portmanteaus and rhymes
+    # Generate the ordered portmanteaus
     start = time()
     portmanteaus = get_portmanteaus(nearest_words1, nearest_words2)
+    print "Portmanteaus: {:.2f} seconds".format(time()-start)
+
+    # Generate the ordered rhymes
+    start = time()
     rhymes = get_rhymes(nearest_words1, nearest_words2)
-    print "Portmanteaus & Rhymes: {:.2f} seconds".format(time()-start)
+    print "Rhymes: {:.2f} seconds".format(time()-start)
 
     return {'portmanteaus': map(lambda x: x.__str__(), portmanteaus[:MAX_PORTMANTEAUS]), 'rhymes': map(lambda x: x.__str__(), rhymes[:MAX_RHYMES])}
 
