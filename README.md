@@ -18,7 +18,7 @@ Code was built on Mac OS 10.12.6 using Python 2.7.10
 
 Citable paper soon to be released on ArXiv.
 
-## Setup
+## Local App Setup
 
 Install the required Python packages
 ```
@@ -61,4 +61,9 @@ Initialize the database and populate tables (takes ~10min)
 > flask db migrate -m 'create tables'
 > flask db upgrade
 > python manage.py populate_tables
+```
+
+Run the app, and go to the url shown to view in browser
+```
+> flask run
 ```

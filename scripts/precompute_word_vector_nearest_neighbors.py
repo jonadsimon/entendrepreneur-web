@@ -25,17 +25,22 @@ def post_processing_algorithm(X, D=3):
     X_prime = X_centered - Z
     return X_prime
 
-def nearest_neighbor(grapheme, fasttext_model, n=100):
+def nearest_neighbor(grapheme, fasttext_model, n=100, s=0.35):
     '''
-    Get the n-many nearest neighbors of the grapheme
+    Get the semantic neighbors of the grapheme.
+    The cutoff for what constitutes a neighbor is either:
+    1) further away than n=100 other graphemes, or
+    2) <s=0.35 similarity between the two vectors
+    whichever comes first
+
     The vectors in fasttext_model have already been normalized
 
     Code adapted from https://github.com/RaRe-Technologies/gensim/blob/develop/gensim/models/keyedvectors.py
     '''
     sims = fasttext_model.vectors.dot(fasttext_model.get_vector(grapheme))
     topn_sim_inds = gensim.matutils.argsort(sims, topn=n+1, reverse=True)
-    neighbors = [fasttext_model.index2word[idx] for idx in topn_sim_inds]
-    return neighbors
+    neighbors_with_sims = [(fasttext_model.index2word[idx], sims[idx]) for idx in topn_sim_inds]
+    return [neighbor for neighbor, sim in neighbors_with_sims if sim >= s]
 
 # Load the word vectors
 # Only care about the first 300k vectors, ignore the rest for now (for memory issue reasons)
@@ -65,4 +70,4 @@ for grapheme_idx, grapheme in enumerate(fasttext_model.vocab.iterkeys()):
         print 'Finished processing vector {}'.format(grapheme_idx)
         print 'Looping duration elapsed: {:.0f} seconds'.format(time()-start)
 
-pkl.dump(grapheme_neighbor_dict, open(REPO_HOME+'data/word_vectors/top100_neighbors_300k.pkl', "wb"))
+pkl.dump(grapheme_neighbor_dict, open(REPO_HOME+'data/word_vectors/top100_neighbors_sim35_300k.pkl', "wb"))
