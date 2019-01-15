@@ -96,7 +96,8 @@ class Rhyme(Pun):
 				num_non_overlap_phones1 = len(word1_phoneme_nonoverlap)
 				num_overlap_phones1 = len(word1_phoneme_overlap)
 				num_non_overlap_phones2 = len(word2_phoneme_nonoverlap) # need to save this for later
-				first_overlap_phone1 = filter(str.isalpha, str(word1_phoneme_overlap[0]))
+				first_overlap_phone1 = str(word1_phoneme_overlap[0])
+				first_overlap_phone2 = str(word2_phoneme_overlap[0])
 
 				# Verify the the overlapping/nonoverlapping phones satisfy the desired constraints on e.g. length
 				if num_overlap_vowel_phones1 < cls.MIN_OVERLAP_VOWEL_PHONES:
@@ -108,8 +109,8 @@ class Rhyme(Pun):
 				elif num_overlap_phones1 < cls.MIN_OVERLAP_PHONES:
 					rhyme, status, message = None, 1, 'phoneme overlap does not have enough phones'
 					continue
-				elif first_overlap_phone1 not in ARPABET_VOWELS:
-					rhyme, status, message = None, 1, 'phoneme overlap does not start with a vowel phone'
+				elif not (first_overlap_phone1[:-1] in ARPABET_VOWELS and first_overlap_phone1[-1] in ('1','2') and first_overlap_phone2[:-1] in ARPABET_VOWELS and first_overlap_phone2[-1] in ('1','2')):
+					rhyme, status, message = None, 1, 'phoneme overlap does not start with a stressed vowel phone'
 					continue
 
 				# Highly redundant, consider scrapping

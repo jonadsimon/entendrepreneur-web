@@ -34,6 +34,9 @@ class Portmanteau(Pun):
 	get_pun : factory for generating Portmanteaus
 	ordering_criterion : returns tuples indicating the quality of a given portmanteau
 	'''
+	# Class Constants
+	ORDERING_CRITERION_CUTOFF = -7
+
 	def __init__(self,
 				word1,
 				word2,
@@ -228,7 +231,8 @@ class Portmanteau(Pun):
 
 	def ordering_criterion(self):
 		'''
-		Return a tuple used for ordering the Portmanteaus in terms of quality
+		Return a scalar used for ordering the Portmanteaus in terms of quality
 		Smaller values correspond to "better" portmanteaus
 		'''
-		return (self.overlap_distance, self.overlap_phoneme_prob)
+		overlap_distance_coef, overlap_phoneme_prob_coef = 0.62, 0.79
+		return overlap_distance_coef * self.overlap_distance + overlap_phoneme_prob_coef * np.log(self.overlap_phoneme_prob)

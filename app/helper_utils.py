@@ -99,11 +99,11 @@ def get_portmanteaus(words1_neighbors, words2_neighbors):
                 continue
             # Generate forward-ordered portmanteau
             portmanteau, status, message = Portmanteau.get_pun(neighbor1, neighbor2)
-            if status == 0:
+            if status == 0 and portmanteau.ordering_criterion() < Portmanteau.ORDERING_CRITERION_CUTOFF:
                 portmanteau_set.add(portmanteau)
             # Generate reverse-ordered portmanteau
             portmanteau, status, message = Portmanteau.get_pun(neighbor2, neighbor1)
-            if status == 0:
+            if status == 0 and portmanteau.ordering_criterion() < Portmanteau.ORDERING_CRITERION_CUTOFF:
                 portmanteau_set.add(portmanteau)
 
     # Order the results in terms of portmanteau quality, with better portmanteaus appearing earlier
