@@ -84,7 +84,7 @@ def get_semantic_neighbor_graphemes(grapheme):
 
     return semantic_neighbor_graphemes
 
-def get_portmanteaus(words1_neighbors, words2_neighbors):
+def get_portmanteaus(words1_neighbors, words2_neighbors, subgrapheme_frequency_cache, subphoneme_frequency_cache):
     '''
     Given a two lists of words, attempt to construct portmanteaus out of each of the
     |words1_neighbors| x |words2_neighbors| many word pairs. Order the generated portmanteaus
@@ -98,11 +98,11 @@ def get_portmanteaus(words1_neighbors, words2_neighbors):
             if neighbor1.grapheme == neighbor2.grapheme:
                 continue
             # Generate forward-ordered portmanteau
-            portmanteau, status, message = Portmanteau.get_pun(neighbor1, neighbor2)
+            portmanteau, status, message = Portmanteau.get_pun(neighbor1, neighbor2, subgrapheme_frequency_cache, subphoneme_frequency_cache)
             if status == 0 and portmanteau.ordering_criterion() < Portmanteau.ORDERING_CRITERION_CUTOFF:
                 portmanteau_set.add(portmanteau)
             # Generate reverse-ordered portmanteau
-            portmanteau, status, message = Portmanteau.get_pun(neighbor2, neighbor1)
+            portmanteau, status, message = Portmanteau.get_pun(neighbor2, neighbor1, subgrapheme_frequency_cache, subphoneme_frequency_cache)
             if status == 0 and portmanteau.ordering_criterion() < Portmanteau.ORDERING_CRITERION_CUTOFF:
                 portmanteau_set.add(portmanteau)
 
@@ -112,7 +112,7 @@ def get_portmanteaus(words1_neighbors, words2_neighbors):
 
     return portmanteau_list
 
-def get_rhymes(words1_neighbors, words2_neighbors):
+def get_rhymes(words1_neighbors, words2_neighbors, subphoneme_frequency_cache):
     '''
     Given a two lists of words, attempt to construct rhyme out of each of the
     |words1_neighbors| x |words2_neighbors| many word pairs. Order the generated rhymes
@@ -127,7 +127,7 @@ def get_rhymes(words1_neighbors, words2_neighbors):
                 continue
             # Generate the rhyme for only a single ordering, if the words need to be flipped
             # for quality reasons, that's handled within the 'get_rhyme' function
-            rhyme, status, message = Rhyme.get_pun(neighbor1, neighbor2)
+            rhyme, status, message = Rhyme.get_pun(neighbor1, neighbor2, subphoneme_frequency_cache)
             if status == 0:
                 rhyme_set.add(rhyme)
 

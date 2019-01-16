@@ -1,10 +1,30 @@
 from flask import render_template, url_for, redirect, request, session
 from app import app
-from app.models import Word
+from app.models import Word, SubgraphemeFrequency, SubphonemeFrequency
 from app.forms import InputWords
 from app.helper_utils import get_semantic_neighbor_graphemes, get_portmanteaus, get_rhymes
 from app.global_constants import MAX_PORTMANTEAUS, MAX_RHYMES
 from time import time
+
+def get_subgrapheme_frequency_cache(words):
+    '''
+    Generate graphene frequency cache up front, so db doesn't need to be queried ~1000x additional times
+    '''
+    head_subgraphemes = [word.grapheme[:i] for word in words for i in range(1, min(len(word.grapheme)+1, 6))]
+    tail_subgraphemes = [word.grapheme[-i:] for word in words for i in range(1, min(len(word.grapheme)+1, 6))]
+    subgraphemes = list(set(head_subgraphemes + tail_subgraphemes))
+    subgrapheme_frequency_rows = SubgraphemeFrequency.query.filter(SubgraphemeFrequency.grapheme.in_(subgraphemes)).all()
+    return {row.grapheme: {'head': row.frequency_head, 'tail': row.frequency_tail} for row in subgrapheme_frequency_rows}
+
+def get_subphoneme_frequency_cache(words):
+    '''
+    Generate phoneme frequency cache up front, so db doesn't need to be queried ~1000x additional times
+    '''
+    head_subphonemes = [word.phoneme[:i] for word in words for i in range(1, min(len(word.phoneme)+1, 6))]
+    tail_subphonemes = [word.phoneme[-i:] for word in words for i in range(1, min(len(word.phoneme)+1, 6))]
+    subphonemes = list(set(map(tuple, head_subphonemes) + map(tuple, tail_subphonemes)))
+    subphoneme_frequency_rows = SubphonemeFrequency.query.filter(SubphonemeFrequency.phoneme.in_(subphonemes)).all()
+    return {tuple(row.phoneme): {'head': row.frequency_head, 'tail': row.frequency_tail} for row in subphoneme_frequency_rows}
 
 def get_puns_from_form_data(form):
     # Find the semantic neighbors of the graphemes
@@ -19,14 +39,20 @@ def get_puns_from_form_data(form):
     nearest_words2 = Word.query.filter(Word.grapheme.in_(nearest_graphemes2)).all()
     print "Word conversion: {:.2f} seconds".format(time()-start)
 
+    # Generate subgrapheme and subphoneme frequency caches up-front
+    start = time()
+    subgrapheme_frequency_cache = get_subgrapheme_frequency_cache(nearest_words1 + nearest_words2)
+    subphoneme_frequency_cache = get_subphoneme_frequency_cache(nearest_words1 + nearest_words2)
+    print "Subgrapheme/Subphoneme caches: {:.2f} seconds".format(time()-start)
+
     # Generate the ordered portmanteaus
     start = time()
-    portmanteaus = get_portmanteaus(nearest_words1, nearest_words2)
+    portmanteaus = get_portmanteaus(nearest_words1, nearest_words2, subgrapheme_frequency_cache, subphoneme_frequency_cache)
     print "Portmanteaus: {:.2f} seconds".format(time()-start)
 
     # Generate the ordered rhymes
     start = time()
-    rhymes = get_rhymes(nearest_words1, nearest_words2)
+    rhymes = get_rhymes(nearest_words1, nearest_words2, subphoneme_frequency_cache)
     print "Rhymes: {:.2f} seconds".format(time()-start)
 
     return {'portmanteaus': map(lambda x: x.__str__(), portmanteaus[:MAX_PORTMANTEAUS]), 'rhymes': map(lambda x: x.__str__(), rhymes[:MAX_RHYMES])}
