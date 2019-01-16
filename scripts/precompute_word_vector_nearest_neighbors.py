@@ -25,7 +25,7 @@ def post_processing_algorithm(X, D=3):
     X_prime = X_centered - Z
     return X_prime
 
-def nearest_neighbor(grapheme, fasttext_model, n=100, s=0.35):
+def nearest_neighbor(grapheme, fasttext_model, n=200, s=0.35):
     '''
     Get the semantic neighbors of the grapheme.
     The cutoff for what constitutes a neighbor is either:
@@ -70,4 +70,4 @@ for grapheme_idx, grapheme in enumerate(fasttext_model.vocab.iterkeys()):
         print 'Finished processing vector {}'.format(grapheme_idx)
         print 'Looping duration elapsed: {:.0f} seconds'.format(time()-start)
 
-pkl.dump(grapheme_neighbor_dict, open(REPO_HOME+'data/word_vectors/top100_neighbors_sim35_300k.pkl', "wb"))
+pkl.dump(grapheme_neighbor_dict, open(REPO_HOME+'data/word_vectors/top200_neighbors_sim35_300k.pkl', "wb"))

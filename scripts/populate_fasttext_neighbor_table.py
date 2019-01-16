@@ -6,7 +6,7 @@ import cPickle as pkl
 def populate_fasttext_neighbor_table(FasttextNeighbor, db):
     # Load the precomputed grapheme neighbors
     start = time()
-    grapheme_neighbor_dict = pkl.load(open(REPO_HOME+'data/word_vectors/top100_neighbors_sim35_300k.pkl', 'rb'))
+    grapheme_neighbor_dict = pkl.load(open(REPO_HOME+'data/word_vectors/top200_neighbors_sim35_300k.pkl', 'rb'))
     print 'Finished loading fasttext_neighbors into memory: {:.0f} seconds'.format(time()-start)
 
     # Create a FasttextNeighbor object for each grapheme
