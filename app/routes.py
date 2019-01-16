@@ -13,6 +13,7 @@ def get_subgrapheme_frequency_cache(words):
     head_subgraphemes = [word.grapheme[:i] for word in words for i in range(1, min(len(word.grapheme)+1, 6))]
     tail_subgraphemes = [word.grapheme[-i:] for word in words for i in range(1, min(len(word.grapheme)+1, 6))]
     subgraphemes = list(set(head_subgraphemes + tail_subgraphemes))
+    print '# Subgraphemes:', len(subgraphemes), ', Ex:', subgraphemes[0]
     subgrapheme_frequency_rows = SubgraphemeFrequency.query.filter(SubgraphemeFrequency.grapheme.in_(subgraphemes)).all()
     return {row.grapheme: {'head': row.frequency_head, 'tail': row.frequency_tail} for row in subgrapheme_frequency_rows}
 
@@ -22,7 +23,8 @@ def get_subphoneme_frequency_cache(words):
     '''
     head_subphonemes = [word.phoneme[:i] for word in words for i in range(1, min(len(word.phoneme)+1, 6))]
     tail_subphonemes = [word.phoneme[-i:] for word in words for i in range(1, min(len(word.phoneme)+1, 6))]
-    subphonemes = list(set(map(tuple, head_subphonemes) + map(tuple, tail_subphonemes)))
+    subphonemes = map(list, list(set(map(tuple, head_subphonemes) + map(tuple, tail_subphonemes))))
+    print '# Subphonemes:', len(subphonemes), ', Ex:', subphonemes[0]
     subphoneme_frequency_rows = SubphonemeFrequency.query.filter(SubphonemeFrequency.phoneme.in_(subphonemes)).all()
     return {tuple(row.phoneme): {'head': row.frequency_head, 'tail': row.frequency_tail} for row in subphoneme_frequency_rows}
 
@@ -42,8 +44,11 @@ def get_puns_from_form_data(form):
     # Generate subgrapheme and subphoneme frequency caches up-front
     start = time()
     subgrapheme_frequency_cache = get_subgrapheme_frequency_cache(nearest_words1 + nearest_words2)
+    print "Subgrapheme frequency cache: {:.2f} seconds".format(time()-start)
+
+    start = time()
     subphoneme_frequency_cache = get_subphoneme_frequency_cache(nearest_words1 + nearest_words2)
-    print "Subgrapheme/Subphoneme caches: {:.2f} seconds".format(time()-start)
+    print "Subphoneme frequency cache: {:.2f} seconds".format(time()-start)
 
     # Generate the ordered portmanteaus
     start = time()
