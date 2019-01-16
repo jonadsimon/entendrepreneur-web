@@ -91,6 +91,9 @@ class SubphonemeFrequency(db.Model):
     frequency_head = db.Column(db.Integer, default=1)
     frequency_tail = db.Column(db.Integer, default=1)
 
+    # copied from here: https://stackoverflow.com/questions/37389216/how-to-create-gin-index-on-text-array-column-in-sqlalchemy-with-postgresql-and
+    # __table_args__ = (db.Index('ix_phoneme', 'phoneme', postgresql_using='gin'), )
+
     def __repr__(self):
         return "<SubphonemeFrequency(phoneme='%s', frequency=%i, frequency_head=%i, frequency_tail=%i)>" % (self.phoneme, self.frequency, self.frequency_head, self.frequency_tail)
 

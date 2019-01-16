@@ -1,5 +1,5 @@
 from flask import render_template, url_for, redirect, request, session
-from app import app
+from app import app, db
 from app.models import Word, SubgraphemeFrequency, SubphonemeFrequency
 from app.forms import InputWords
 from app.helper_utils import get_semantic_neighbor_graphemes, get_portmanteaus, get_rhymes
@@ -14,7 +14,14 @@ def get_subgrapheme_frequency_cache(words):
     tail_subgraphemes = [word.grapheme[-i:] for word in words for i in range(1, min(len(word.grapheme)+1, 6))]
     subgraphemes = list(set(head_subgraphemes + tail_subgraphemes))
     print '# Subgraphemes:', len(subgraphemes), ', Ex:', subgraphemes[0]
-    subgrapheme_frequency_rows = SubgraphemeFrequency.query.filter(SubgraphemeFrequency.grapheme.in_(subgraphemes)).all()
+    # subgrapheme_frequency_rows = SubgraphemeFrequency.query.filter(SubgraphemeFrequency.grapheme.in_(subgraphemes)).all()
+    query = SubgraphemeFrequency.query.filter(SubgraphemeFrequency.grapheme.in_(subgraphemes))
+    params = {'grapheme_{}'.format(i+1): grapheme for i,grapheme in enumerate(subgraphemes)}
+    expl = db.engine.execute('EXPLAIN ANALYZE ' + str(query), params)
+    for row in expl:
+        for r in row:
+            print r
+    subgrapheme_frequency_rows = query.all()
     return {row.grapheme: {'head': row.frequency_head, 'tail': row.frequency_tail} for row in subgrapheme_frequency_rows}
 
 def get_subphoneme_frequency_cache(words):
@@ -25,7 +32,14 @@ def get_subphoneme_frequency_cache(words):
     tail_subphonemes = [word.phoneme[-i:] for word in words for i in range(1, min(len(word.phoneme)+1, 6))]
     subphonemes = map(list, list(set(map(tuple, head_subphonemes) + map(tuple, tail_subphonemes))))
     print '# Subphonemes:', len(subphonemes), ', Ex:', subphonemes[0]
-    subphoneme_frequency_rows = SubphonemeFrequency.query.filter(SubphonemeFrequency.phoneme.in_(subphonemes)).all()
+    # subphoneme_frequency_rows = SubphonemeFrequency.query.filter(SubphonemeFrequency.phoneme.in_(subphonemes)).all()
+    query = SubphonemeFrequency.query.filter(SubphonemeFrequency.phoneme.in_(subphonemes))
+    params = {'phoneme_{}'.format(i+1): '{'+','.join(map(str, subphoneme))+'}' for i,subphoneme in enumerate(subphonemes)}
+    expl = db.engine.execute('EXPLAIN ANALYZE ' + str(query), params)
+    for row in expl:
+        for r in row:
+            print r
+    subphoneme_frequency_rows = query.all()
     return {tuple(row.phoneme): {'head': row.frequency_head, 'tail': row.frequency_tail} for row in subphoneme_frequency_rows}
 
 def get_puns_from_form_data(form):
