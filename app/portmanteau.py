@@ -1,6 +1,7 @@
 from global_constants import *
 import numpy as np
 from pun import Pun
+from time import time
 
 class Portmanteau(Pun):
 	'''
@@ -66,7 +67,7 @@ class Portmanteau(Pun):
 		self.overlap_phoneme_prob = overlap_phoneme_prob
 
 	@classmethod
-	def get_pun(cls, word1, word2, subgrapheme_frequency_cache, subphoneme_frequency_cache):
+	def get_pun(cls, word1, word2):
 		'''
 		---------------
 		# DESCRIPTION #
@@ -158,8 +159,10 @@ class Portmanteau(Pun):
 				word1_grapheme_nonoverlap = ''.join(word1.get_subgrapheme_from_subphoneme_inds(0, word1_phoneme_overlap_start_idx-1, return_inds=False))
 				word2_grapheme_nonoverlap = ''.join(word2.get_subgrapheme_from_subphoneme_inds(word2_phoneme_overlap_end_idx+1, len(word2.phoneme)-1, return_inds=False))
 
-				word1_prob_given_dangling_graphs = cls.get_prob_word_given_subgrapheme(word1_grapheme_nonoverlap, 'head', subgrapheme_frequency_cache)
-				word2_prob_given_dangling_graphs = cls.get_prob_word_given_subgrapheme(word2_grapheme_nonoverlap, 'tail', subgrapheme_frequency_cache)
+				start = time()
+				word1_prob_given_dangling_graphs = cls.get_prob_word_given_subgrapheme(word1_grapheme_nonoverlap, 'head')
+				word2_prob_given_dangling_graphs = cls.get_prob_word_given_subgrapheme(word2_grapheme_nonoverlap, 'tail')
+				print "Subgrapheme proba (2x): {:.2f} seconds".format(time()-start)
 
 				grapheme_portmanteau1 = word1.grapheme + word2_grapheme_nonoverlap
 				grapheme_portmanteau2 = word1_grapheme_nonoverlap + word2.grapheme
@@ -174,8 +177,10 @@ class Portmanteau(Pun):
 					phoneme_portmanteau1, phoneme_portmanteau2 = phoneme_portmanteau2, phoneme_portmanteau1
 
 				# Compute p(p_overlap, q_overlap) (see paper)
-				word1_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), 'tail', subphoneme_frequency_cache)
-				word2_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), 'head', subphoneme_frequency_cache)
+				start = time()
+				word1_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), 'tail')
+				word2_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), 'head')
+				print "Subphoneme proba (2x): {:.2f} seconds".format(time()-start)
 				overlap_phoneme_prob = word1_overlap_phoneme_prob * word2_overlap_phoneme_prob
 
 				# Instantiate the constructed portmanteau, and return it

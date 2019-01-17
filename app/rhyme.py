@@ -3,6 +3,7 @@ from helper_utils import *
 import numpy as np
 from nltk.corpus import wordnet as wn
 from pun import Pun
+from time import time
 
 class Rhyme(Pun):
 	'''
@@ -47,7 +48,7 @@ class Rhyme(Pun):
 		self.overlap_phoneme_prob = overlap_phoneme_prob
 
 	@classmethod
-	def get_pun(cls, word1, word2, subphoneme_frequency_cache):
+	def get_pun(cls, word1, word2):
 		'''
 		---------------
 		# DESCRIPTION #
@@ -133,8 +134,10 @@ class Rhyme(Pun):
 				# All alignments and min-char requirements have been met, so create the Rhyme, and return it
 
 				# Compute p(p_overlap, q_overlap) (see paper)
-				word1_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), 'tail', subphoneme_frequency_cache)
-				word2_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), 'tail', subphoneme_frequency_cache)
+				start = time()
+				word1_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), 'tail')
+				word2_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), 'tail')
+				print "Subphoneme proba (2x): {:.2f} seconds".format(time()-start)
 				overlap_phoneme_prob = word1_tail_phoneme_prob * word2_tail_phoneme_prob
 
 				# Use POS + grapheme_length ordering rules to decide which word to put first

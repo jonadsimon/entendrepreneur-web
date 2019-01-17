@@ -30,32 +30,18 @@ class Pun(object):
 		pass
 
 	@staticmethod
-	def get_prob_word_given_subgrapheme(subgrapheme, side, subgrapheme_frequency_cache=None):
+	def get_prob_word_given_subgrapheme(subgrapheme, side):
 		'''
 		Probability of a word given that it starts with/end with/contains a given grapheme
 		'''
-		if subgrapheme_frequency_cache: # cache is present
-			subgrapheme_row = subgrapheme_frequency_cache.get(subgrapheme)
-			if subgrapheme_row:
-				return 1.0 / subgrapheme_row[side]
-			else: # subgrapheme too long/rare to appear in table, assume freq=1
-				return 1.0
-		else: # cache is not present
-			return 1.0 / SubgraphemeFrequency.get_subgrapheme_frequency(subgrapheme, side)
+		return 1.0 / SubgraphemeFrequency.get_subgrapheme_frequency(subgrapheme, side)
 
 	@staticmethod
-	def get_subphoneme_prob(subphoneme, side, subphoneme_frequency_cache=None):
+	def get_subphoneme_prob(subphoneme, side):
 		'''
 		Probability of any word starting with/ending with/containing a given phoneme
 		'''
-		if subphoneme_frequency_cache: # cache is present
-			subphoneme_row = subphoneme_frequency_cache.get(subphoneme)
-			if subphoneme_row:
-				return 1.0 * subphoneme_row[side] / VOCAB_SIZE
-			else: # subphoneme too long/rare to appear in table, assume freq=1
-				return 1.0 / VOCAB_SIZE
-		else: # cache is not present
-			return 1.0 * SubphonemeFrequency.get_subphoneme_frequency(subphoneme, side) / VOCAB_SIZE
+		return 1.0 * SubphonemeFrequency.get_subphoneme_frequency(subphoneme, side) / VOCAB_SIZE
 
 	@staticmethod
 	def get_phone_distance(phone1, phone2):
