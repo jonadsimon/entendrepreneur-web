@@ -31,6 +31,10 @@ class Rhyme(Pun):
 	get_word_ordering : returns pair of rhyming words in the order they should be displayed
 	ordering_criterion : returns tuples indicating the quality of a given rhyme
 	'''
+
+	# Stricter distance enforcement for `Rhymes; vowels MUST match
+	MAX_OVERLAP_DIST = 2
+
 	def __init__(self,
 				word1,
 				word2,
