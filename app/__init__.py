@@ -8,7 +8,7 @@ from flask_heroku import Heroku
 
 app = Flask(__name__)
 app.config.from_object(Config)
-bootstrap = Bootstrap(app)
+Bootstrap(app)
 heroku = Heroku(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
