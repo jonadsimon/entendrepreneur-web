@@ -32,8 +32,8 @@ class Rhyme(Pun):
 	ordering_criterion : returns tuples indicating the quality of a given rhyme
 	'''
 
-	# Stricter distance enforcement for `Rhymes; vowels MUST match
-	MAX_OVERLAP_DIST = 2
+	# Stricter distance enforcement for `Rhymes; unstressed phones MUST match
+	MAX_OVERLAP_DIST = 1
 
 	def __init__(self,
 				word1,
