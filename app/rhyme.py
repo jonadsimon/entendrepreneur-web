@@ -238,4 +238,4 @@ class Rhyme(Pun):
 		Return a tuple used for ordering the Rhymes in terms of quality
 		Smaller values correspond to "better" rhymes
 		'''
-		return (self.overlap_distance, self.overlap_phoneme_prob)
+		return (self.overlap_phoneme_prob, self.overlap_distance)
