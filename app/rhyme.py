@@ -240,8 +240,8 @@ class Rhyme(Pun):
 		return {
 			'grapheme1': self.word1.grapheme,
 			'grapheme2': self.word2.grapheme,
-			'phoneme1': '&#xb7;'.join(map(Rhyme.subscript_phone_stress, self.word1.phoneme)),
-			'phoneme2': '&#xb7;'.join(map(Rhyme.subscript_phone_stress, self.word2.phoneme)),
+			'phoneme1': '&#xb7;'.join(map(Pun.subscript_phone_stress, self.word1.phoneme)),
+			'phoneme2': '&#xb7;'.join(map(Pun.subscript_phone_stress, self.word2.phoneme)),
 			'phonetic_distance': '{:d}'.format(self.overlap_distance),
 			'phonetic_probability': '{:.2e}'.format(self.overlap_phoneme_prob)
 			}

@@ -73,11 +73,13 @@ class Pun(object):
 
 	@staticmethod
 	def subscript_phone_stress(phone):
-	    if phone[-1].isnumeric():
-			# see here: https://stackoverflow.com/a/38209791/2562771
-	        return u'{}{}'.format(phone[:-1], unichr(0x2080 + int(phone[-1])))
-	    else:
-	        return phone
+		'''
+		See here: https://stackoverflow.com/a/38209791/2562771
+		'''
+		if phone[-1].isnumeric():
+			return u'{}{}'.format(phone[:-1], unichr(0x2080 + int(phone[-1])))
+		else:
+			return phone
 
 	# Needs to be a classmethod rather than a static method so that it can call 'get_phone_distance'
 	@classmethod
