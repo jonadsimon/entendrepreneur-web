@@ -29,7 +29,7 @@ def get_puns_from_form_data(form):
     rhymes = get_rhymes(nearest_words1, nearest_words2)
     print "Rhymes: {:.2f} seconds".format(time()-start)
 
-    return {'portmanteaus': map(lambda x: x.__str__(), portmanteaus[:MAX_PORTMANTEAUS]), 'rhymes': map(lambda x: x.__str__(), rhymes[:MAX_RHYMES])}
+    return {'portmanteaus': map(lambda x: x.serialize(), portmanteaus[:MAX_PORTMANTEAUS]), 'rhymes': map(lambda x: x.serialize(), rhymes[:MAX_RHYMES])}
 
 @app.route('/')
 def home():

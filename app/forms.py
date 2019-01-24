@@ -7,7 +7,6 @@ from app.models import FasttextNeighbor
 class InputWords(FlaskForm):
     word1 = StringField('Word 1', validators=[DataRequired()])
     word2 = StringField('Word 2', validators=[DataRequired()])
-    submit = SubmitField('Generate Puns')
 
     # Annoying that the validation is identical/redundant, but keep as-is for now
     # Will return double-errors if both words are identical AND unrecognized

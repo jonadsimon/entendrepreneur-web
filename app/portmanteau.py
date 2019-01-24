@@ -35,7 +35,7 @@ class Portmanteau(Pun):
 	ordering_criterion : returns tuples indicating the quality of a given portmanteau
 	'''
 	# Class Constants
-	ORDERING_CRITERION_CUTOFF = -7
+	ORDERING_CRITERION_CUTOFF = -7.5
 
 	def __init__(self,
 				word1,
@@ -228,6 +228,22 @@ class Portmanteau(Pun):
 
 	def __str__(self):
 		return '{} ({}/{})'.format(self.grapheme_portmanteau1, self.word1.grapheme, self.word2.grapheme)
+
+	def serialize(self):
+		'''
+		"&#xb7;" is the HTML symbol for "middot"
+		http://www.fileformat.info/info/unicode/char/b7/index.htm
+		'''
+		return {
+			'grapheme_portmanteau': self.grapheme_portmanteau1,
+			'grapheme1': self.word1.grapheme,
+			'grapheme2': self.word2.grapheme,
+			'phoneme_portmanteau': '&#xb7;'.join(map(Portmanteau.subscript_phone_stress, self.phoneme_portmanteau1)),
+			'phoneme1': '&#xb7;'.join(map(Portmanteau.subscript_phone_stress, self.word1.phoneme)),
+			'phoneme2': '&#xb7;'.join(map(Portmanteau.subscript_phone_stress, self.word2.phoneme)),
+			'phonetic_distance': '{:d}'.format(self.overlap_distance),
+			'phonetic_probability': '{:.2e}'.format(self.overlap_phoneme_prob)
+			}
 
 	def ordering_criterion(self):
 		'''

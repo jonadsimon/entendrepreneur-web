@@ -1,5 +1,4 @@
 from global_constants import *
-from helper_utils import *
 import numpy as np
 from nltk.corpus import wordnet as wn
 from pun import Pun
@@ -232,6 +231,20 @@ class Rhyme(Pun):
 
 	def __str__(self):
 		return '{} {}'.format(self.word1.grapheme, self.word2.grapheme)
+
+	def serialize(self):
+		'''
+		"&#xb7;" is the HTML symbol for "middot"
+		http://www.fileformat.info/info/unicode/char/b7/index.htm
+		'''
+		return {
+			'grapheme1': self.word1.grapheme,
+			'grapheme2': self.word2.grapheme,
+			'phoneme1': '&#xb7;'.join(map(Rhyme.subscript_phone_stress, self.word1.phoneme)),
+			'phoneme2': '&#xb7;'.join(map(Rhyme.subscript_phone_stress, self.word2.phoneme)),
+			'phonetic_distance': '{:d}'.format(self.overlap_distance),
+			'phonetic_probability': '{:.2e}'.format(self.overlap_phoneme_prob)
+			}
 
 	def ordering_criterion(self):
 		'''

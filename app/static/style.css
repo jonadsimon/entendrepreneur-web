@@ -1,35 +1,7 @@
-/* adapted from: https://css-tricks.com/snippets/css/css-grid-starter-layouts/ */
-
 body {
-  display: grid;
-  grid-template-columns: 35% 35%;
-  grid-template-rows: auto auto auto;
-  grid-gap: 0.5em;
-  justify-content: center;
+  background-color: #eceff1 !important;
 }
 
-header,
-footer {
-  grid-column: 1 / span 2;
-}
-
-footer {
-  padding: 20px;
-  text-align: justify;
-}
-
-header,
-main,
-aside,
-footer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: top;
-  border-radius: 10px;
-  font-family: 'Arial', sans-serif;
-}
-
-p {
-  margin: 10px 0;
+.table tbody tr {
+  background-color: #f9f9f9 !important;
 }

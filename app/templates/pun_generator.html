@@ -1,63 +1,91 @@
-<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-blue-grey.css">
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 
-<head>
-  <title>Entendrepreneur Portmanteau & Rhyme Generator</title>
-  <link href="../static/style.css" rel="stylesheet">
-</head>
-<header class="w3-theme-l3">
+{% block styles %}
+{{ super() }}
+<link href="../static/style.css" rel="stylesheet">
+{% endblock %}
+
+{% block title %}
+Entendrepreneur Portmanteau & Rhyme Generator
+{% endblock %}
+
+{% block content %}
+<div class="container">
+<div class="p-3 mb-2 bg-dark text-white">
   <h1>Portmanteau & Rhyme Generator</h1>
   <form action="" method="post" novalidate>
+    <d1>
       {{ form.hidden_tag() }}
-      <p>
-          {{ form.word1.label }}<br>
-          {{ form.word1(size=32) }}
-          {% for error in form.word1.errors %}
-          <span style="color: red;">[{{ error }}]</span>
+      {{ wtf.form_field(form.word1) }}
+      {{ wtf.form_field(form.word2) }}
+      <input class="btn btn-primary" type="submit" value="Generate">
+    </d1>
+  </form>
+
+  {% if results %}
+    <h2>Rhymes</h2>
+    {% if results.rhymes %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Rhyme</th>
+            <th scope="col">Phoneme 1</th>
+            <th scope="col">Phoneme 2</th>
+            <th scope="col">Phonetic Probability</th>
+            <th scope="col">Phonetic Distance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rhyme in results.rhymes %}
+            <tr>
+              <th scope="row">{{ '{} {}'.format(rhyme.grapheme1, rhyme.grapheme2) }}</th>
+              <td>{{ rhyme.phoneme1|safe }}</td> <!-- 'safe' tells Flask not to escape the html -->
+              <td>{{ rhyme.phoneme2|safe }}</td> <!-- 'safe' tells Flask not to escape the html -->
+              <td>{{ rhyme.phonetic_probability }}</td>
+              <td>{{ rhyme.phonetic_distance }}</td>
+            </tr>
           {% endfor %}
-      </p>
-      <p>
-          {{ form.word2.label }}<br>
-          {{ form.word2(size=32) }}
-          {% for error in form.word2.errors %}
-          <span style="color: red;">[{{ error }}]</span>
+        </tbody>
+      </table>
+    {% else %}
+      No rhymes found &#x1F641;
+    {% endif %}
+
+    <h2>Portmanteaus</h2>
+    {% if results.portmanteaus %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Portmanteau</th>
+            <th scope="col">Phoneme 1</th>
+            <th scope="col">Phoneme 2</th>
+            <!-- <th scope="col">Phoneme Portmanteau</th> -->
+            <th scope="col">Phonetic Probability</th>
+            <th scope="col">Phonetic Distance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for portmanteau in results.portmanteaus %}
+            <tr>
+              <th scope="row">{{ '{} ({}/{})'.format(portmanteau.grapheme_portmanteau, portmanteau.grapheme1, portmanteau.grapheme2) }}</th>
+              <td>{{ portmanteau.phoneme1|safe }}</td>
+              <td>{{ portmanteau.phoneme2|safe }}</td>
+              <!-- <td>{{ portmanteau.phoneme_portmanteau|safe }}</td> -->
+              <td>{{ portmanteau.phonetic_probability }}</td>
+              <td>{{ portmanteau.phonetic_distance }}</td>
+            </tr>
           {% endfor %}
-      </p>
-      <p>{{ form.submit() }}</p>
-    </form>
-</header>
-{% if results %}
-<main class="w3-theme-l4">
-  <h2>Portmanteaus</h2>
-  {% if results.portmanteaus %}
-    <ul style="list-style-type:none">
-    {% for portmanteau in results.portmanteaus %}
-    <li><p>{{ portmanteau }}</p></li>
-    {% endfor %}
-    </ul>
-  {% else %}
-    No portmanteaus found &#x1F641;
+        </tbody>
+      </table>
+    {% else %}
+      No portmanteaus found &#x1F641;
+    {% endif %}
   {% endif %}
-</main>
-<aside class="w3-theme-l4">
-  <h2>Rhymes</h2>
-  {% if results.rhymes %}
-    <ul style="list-style-type:none">
-    {% for rhyme in results.rhymes %}
-    <li><p>{{ rhyme }}</p></li>
-    {% endfor %}
-    </ul>
-  {% else %}
-    No rhymes found &#x1F641;
-  {% endif %}
-</aside>
-{% else %} <!-- null fields are necessary for auto-spacing to work properly -->
-<main>
-</main>
-<aside>
-</aside>
-{% endif %}
-<footer class="w3-theme-l2">
+  <h2>About</h2>
   <p>
   The code for generating the portmanteaus and rhymes can be found at the <a href="https://github.com/jonadsimon/entendrepreneur-web">entendrepreneur-web</a> github  repository. This algorithm was presented at the NeurIPS 2018 Creativity and Design Workshop under the title "Entendrepreneur: Generating Humorous Portmanteaus using Word-Embeddings", the associated conference paper can be found <a href="https://nips2018creativity.github.io/doc/entendrepreneur.pdf">here</a>. All credit for the code and the algorithm goes to <a href="https://www.linkedin.com/in/jonadsimon/">Jonathan Simon</a>. Please direct any questions to <a href="mailto:jonadsimon@gmail.com">jonadsimon@gmail.com</a>.
   </p>
-</footer>
+</div>
+</div>
+{% endblock %}
