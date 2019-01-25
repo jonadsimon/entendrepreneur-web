@@ -63,9 +63,16 @@ def get_semantic_neighbor_graphemes(grapheme):
     '''
     Fetch the precomputed n=100 nearest neighbors to the given grapheme
     '''
+    # Possible that the input was only allowed through because an ALTERNATE capitalization was valid, i.e. 'robocop' matched 'Robocop'
+    grapheme_alternatives = alternate_capitalizations(grapheme)
 
-    # Precomputed top-100 neighbors
-    fasttext_neighbor_graphemes = FasttextNeighbor.query.filter_by(grapheme=grapheme).first().neighbors
+    for this_grapheme in grapheme_alternatives:
+        # Precomputed top-100 neighbors
+        fasttext_neighbor_graphemes_row = FasttextNeighbor.query.filter_by(grapheme=this_grapheme).first()
+        # If this capitalization variant matched, then keep it and move on
+        if fasttext_neighbor_graphemes_row:
+            fasttext_neighbor_graphemes = fasttext_neighbor_graphemes_row.neighbors
+            break
 
     # FastText sometimes returns funky unicode characters like umlouts, so make sure to catch/discard these before continuing
     fasttext_neighbor_graphemes_clean = []
