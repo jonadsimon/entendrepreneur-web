@@ -123,3 +123,17 @@ class FasttextNeighbor(db.Model):
 
     def __repr__(self):
         return "<FasttextNeighbor(grapheme='%s', neighbors=...)>" % (self.grapheme)
+
+
+class UserInput(db.Model):
+    __tablename__ = 'user_inputs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    grapheme1 = db.Column(db.String)
+    grapheme2 = db.Column(db.String)
+    created_at = db.Column(db.TIMESTAMP)
+    updated_at = db.Column(db.TIMESTAMP)
+
+    def __repr__(self):
+        # TODO: Update representation to include created_at/updated_at fields
+        return "<UserInput(grapheme1='%s', grapheme2='%s', ...)>" % (self.grapheme1, self.grapheme2)

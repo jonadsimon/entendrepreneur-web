@@ -1,10 +1,11 @@
 from flask import render_template, url_for, redirect, request, session
-from app import app
-from app.models import Word
+from app import app, db
+from app.models import Word, UserInput
 from app.forms import InputWords
 from app.helper_utils import get_semantic_neighbor_graphemes, get_portmanteaus, get_rhymes
 from app.global_constants import MAX_PORTMANTEAUS, MAX_RHYMES
 from time import time
+from datetime import datetime
 
 def get_puns_from_words(word1, word2):
     # Find the semantic neighbors of the graphemes
@@ -47,6 +48,10 @@ def pun_generator():
     # Get the user inputs from the form
     form = InputWords()
     if form.validate_on_submit():
+        # Add user inputs to the user_inputs table
+        user_inputs = UserInput(grapheme1=form.word1.data, grapheme2=form.word2.data, created_at=datetime.utcnow(), updated_at=datetime.utcnow())
+        db.session.add(user_inputs)
+        db.session.commit()
         # Redirect to the results page, passing along the (valid) input words
         return redirect(url_for('results', word1=form.word1.data, word2=form.word2.data))
     # If the submit button was not clicked, or the results were not valid, render the page as-is
@@ -61,6 +66,10 @@ def results(word1, word2):
     # Get the user inputs from the form
     form = InputWords()
     if form.validate_on_submit(): # Option (1) user just inputed a new valid word pair
+        # Add user inputs to the user_inputs table
+        user_inputs = UserInput(grapheme1=form.word1.data, grapheme2=form.word2.data, created_at=datetime.utcnow(), updated_at=datetime.utcnow())
+        db.session.add(user_inputs)
+        db.session.commit()
         # Redirect to new results page with appropriate url path
         return redirect(url_for('results', word1=form.word1.data, word2=form.word2.data))
     elif form.word1.data is None and form.word2.data is None: # Option (2) user just landed on this url
