@@ -32,6 +32,17 @@ def get_puns_from_words(word1, word2):
 
     return {'portmanteaus': map(lambda x: x.serialize(), portmanteaus[:MAX_PORTMANTEAUS]), 'rhymes': map(lambda x: x.serialize(), rhymes[:MAX_RHYMES])}
 
+def log_user_inputs(grapheme1, grapheme2, is_valid):
+    '''
+    Log the user's inputs
+    IP address logic quelled from this thread: https://stackoverflow.com/questions/3759981/get-ip-address-of-visitors-using-flask-for-python
+    '''
+    ts = datetime.utcnow()
+    user_ip = request.environ.get('HTTP_X_REAL_IP') or request.environ.get('REMOTE_ADDR') or request.remote_addr
+    user_inputs = UserInput(grapheme1=grapheme1, grapheme2=grapheme2, is_valid=is_valid, ip_address=user_ip, created_at=ts, updated_at=ts)
+    db.session.add(user_inputs)
+    db.session.commit()
+
 @app.route('/')
 def home():
     '''
@@ -49,11 +60,14 @@ def pun_generator():
     form = InputWords()
     if form.validate_on_submit():
         # Add user inputs to the user_inputs table
-        user_inputs = UserInput(grapheme1=form.word1.data, grapheme2=form.word2.data, created_at=datetime.utcnow(), updated_at=datetime.utcnow())
-        db.session.add(user_inputs)
-        db.session.commit()
+        log_user_inputs(form.word1.data, form.word2.data, True)
         # Redirect to the results page, passing along the (valid) input words
         return redirect(url_for('results', word1=form.word1.data, word2=form.word2.data))
+
+    # Submit button was clicked, but words were invalid
+    if form.word1.data is not None and form.word2.data is not None: # submit button was pressed, but the inputs were invalid
+        log_user_inputs(form.word1.data, form.word2.data, False)
+
     # If the submit button was not clicked, or the results were not valid, render the page as-is
     return render_template('pun_generator.html', form=form)
 
@@ -67,9 +81,7 @@ def results(word1, word2):
     form = InputWords()
     if form.validate_on_submit(): # Option (1) user just inputed a new valid word pair
         # Add user inputs to the user_inputs table
-        user_inputs = UserInput(grapheme1=form.word1.data, grapheme2=form.word2.data, created_at=datetime.utcnow(), updated_at=datetime.utcnow())
-        db.session.add(user_inputs)
-        db.session.commit()
+        log_user_inputs(form.word1.data, form.word2.data, True)
         # Redirect to new results page with appropriate url path
         return redirect(url_for('results', word1=form.word1.data, word2=form.word2.data))
     elif form.word1.data is None and form.word2.data is None: # Option (2) user just landed on this url
@@ -78,5 +90,7 @@ def results(word1, word2):
         form.word1.data, form.word2.data = word1, word2
         return render_template('pun_generator.html', form=form, results=pun_results)
     else: # Option (3) user just inputed a new invalid word pair
+        # Log the invalid words
+        log_user_inputs(form.word1.data, form.word2.data, False)
         # Render the page as-is, with the errors shown
         return render_template('pun_generator.html', form=form)

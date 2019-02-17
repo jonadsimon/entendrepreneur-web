@@ -129,11 +129,13 @@ class UserInput(db.Model):
     __tablename__ = 'user_inputs'
 
     id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String)
     grapheme1 = db.Column(db.String)
     grapheme2 = db.Column(db.String)
+    is_valid = db.Column(db.Boolean)
     created_at = db.Column(db.TIMESTAMP)
     updated_at = db.Column(db.TIMESTAMP)
 
     def __repr__(self):
-        # TODO: Update representation to include created_at/updated_at fields
+        # TODO: Update representation to include additional fields
         return "<UserInput(grapheme1='%s', grapheme2='%s', ...)>" % (self.grapheme1, self.grapheme2)

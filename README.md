@@ -67,3 +67,30 @@ Run the app, and go to the url shown to view in browser
 ```
 > flask run
 ```
+
+## Updating the Database Schema
+
+Note: The following scripts should all be run from within the repo's top-level directory
+
+To delete all rows from a table while keeping the schema intact:
+```
+> from app import db
+> from app.models import TABLENAME
+> TABLENAME.query.delete()
+> db.session.commit()
+```
+
+To drop a table entirely:
+```
+> from app import db
+> from app.models import TABLENAME
+> TABLENAME.__table__.drop(db.engine)
+> db.session.commit()
+```
+
+To create a new (empty) table:
+```
+> from app import db
+> from app.models import TABLENAME
+> db.create_all()
+```
