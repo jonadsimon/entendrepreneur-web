@@ -35,11 +35,11 @@ def get_puns_from_words(word1, word2):
 def log_user_inputs(grapheme1, grapheme2, is_valid):
     '''
     Log the user's inputs
-    IP address logic from here: https://stackoverflow.com/a/18598319/2562771
+    IP address logic from here: https://stackoverflow.com/a/23281516/2562771
+    The solution shown is the only one of ~5 options tried that resulted in the correct IP being returned when pinging from Starbucks' WiFi
     '''
     ts = datetime.utcnow()
-    headers_list = request.headers.getlist("X-Forwarded-For")
-    user_ip = headers_list[0] if headers_list else request.remote_addr
+    user_ip = request.access_route[-1]
     user_inputs = UserInput(grapheme1=grapheme1, grapheme2=grapheme2, is_valid=is_valid, ip_address=user_ip, created_at=ts, updated_at=ts)
     db.session.add(user_inputs)
     db.session.commit()
