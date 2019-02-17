@@ -94,3 +94,20 @@ To create a new (empty) table:
 > from app.models import TABLENAME
 > db.create_all()
 ```
+
+To copy the Postgres database from local hosting to Heroku hosting:
+
+(1) Dump the data to a file:
+```
+> PGPASSWORD=punsaregreat pg_dump -Fc --no-acl --no-owner -h localhost -U pun_user entendrepreneur_db > data/db_dumps/entendrepreneur_db_dump_compressed.dump
+```
+(2) Upload the `entendrepreneur_db_dump_compressed.dump` file to an S3 bucket
+(3) Overwrite the current Heroku databse with the content in the S3 file
+```
+> heroku pg:backups:restore '[S3_URL]' DATABASE_URL --confirm entendrepreneur-app
+```
+(4) Manually verify the content of the Heroku database
+```
+> heroku pg:psql
+> \dt
+```
