@@ -35,10 +35,11 @@ def get_puns_from_words(word1, word2):
 def log_user_inputs(grapheme1, grapheme2, is_valid):
     '''
     Log the user's inputs
-    IP address logic quelled from this thread: https://stackoverflow.com/questions/3759981/get-ip-address-of-visitors-using-flask-for-python
+    IP address logic from here: https://stackoverflow.com/a/18598319/2562771
     '''
     ts = datetime.utcnow()
-    user_ip = request.remote_addr
+    headers_list = request.headers.getlist("X-Forwarded-For")
+    user_ip = headers_list[0] if headers_list else request.remote_addr
     user_inputs = UserInput(grapheme1=grapheme1, grapheme2=grapheme2, is_valid=is_valid, ip_address=user_ip, created_at=ts, updated_at=ts)
     db.session.add(user_inputs)
     db.session.commit()
