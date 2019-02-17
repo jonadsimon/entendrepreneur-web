@@ -38,7 +38,7 @@ def log_user_inputs(grapheme1, grapheme2, is_valid):
     IP address logic quelled from this thread: https://stackoverflow.com/questions/3759981/get-ip-address-of-visitors-using-flask-for-python
     '''
     ts = datetime.utcnow()
-    user_ip = request.environ.get('REMOTE_ADDR') or request.remote_addr
+    user_ip = request.remote_addr
     user_inputs = UserInput(grapheme1=grapheme1, grapheme2=grapheme2, is_valid=is_valid, ip_address=user_ip, created_at=ts, updated_at=ts)
     db.session.add(user_inputs)
     db.session.commit()
