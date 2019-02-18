@@ -5,8 +5,8 @@ from app.helper_utils import alternate_capitalizations
 from app.models import FasttextNeighbor
 
 class InputWords(FlaskForm):
-    word1 = StringField('Word 1', validators=[DataRequired()])
-    word2 = StringField('Word 2', validators=[DataRequired()])
+    word1 = StringField('Word 1', validators=[DataRequired()], filters=[lambda s: s.strip() if s else s])
+    word2 = StringField('Word 2', validators=[DataRequired()], filters=[lambda s: s.strip() if s else s])
 
     # Annoying that the validation is identical/redundant, but keep as-is for now
     # Will return double-errors if both words are identical AND unrecognized
