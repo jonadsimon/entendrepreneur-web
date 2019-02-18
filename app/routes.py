@@ -35,12 +35,11 @@ def get_puns_from_words(word1, word2):
 def log_user_inputs(grapheme1, grapheme2, is_valid):
     '''
     Log the user's inputs
-    IP address logic combines:
-    (1) https://stackoverflow.com/a/51088317/2562771 - necessitated by my use of CloudFlare, which acts as a proxy
-    (2) https://stackoverflow.com/a/23281516/2562771 - needed to get around e.g. Starbucks' proxy
+    IP address logic from here: https://stackoverflow.com/a/51088317/2562771
+    Using ProxyFix is necessitated by the app's use of CloudFlare, which acts as a proxy
     '''
     ts = datetime.utcnow()
-    user_ip = request.access_route[-1]
+    user_ip = request.remote_addr
     user_inputs = UserInput(grapheme1=grapheme1, grapheme2=grapheme2, is_valid=is_valid, ip_address=user_ip, created_at=ts, updated_at=ts)
     db.session.add(user_inputs)
     db.session.commit()

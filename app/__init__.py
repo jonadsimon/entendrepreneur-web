@@ -9,7 +9,7 @@ from werkzeug.contrib.fixers import ProxyFix
 
 app = Flask(__name__)
 app.config.from_object(Config)
-app.wsgi_app = ProxyFix(app.wsgi_app, num_proxies=1) # necessitated by CloudFlare (I think)
+app.wsgi_app = ProxyFix(app.wsgi_app, num_proxies=2) # necessitated by Heroku + CloudFlare (I think)
 Bootstrap(app)
 sslify = SSLify(app)
 heroku = Heroku(app)
