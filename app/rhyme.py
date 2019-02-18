@@ -140,7 +140,6 @@ class Rhyme(Pun):
 				start = time()
 				word1_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), 'tail')
 				word2_tail_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), 'tail')
-				print "Subphoneme proba (2x): {:.2f} seconds".format(time()-start)
 				overlap_phoneme_prob = word1_tail_phoneme_prob * word2_tail_phoneme_prob
 
 				# Use POS + grapheme_length ordering rules to decide which word to put first
@@ -252,3 +251,9 @@ class Rhyme(Pun):
 		Smaller values correspond to "better" rhymes
 		'''
 		return (self.overlap_phoneme_prob, self.overlap_distance)
+
+	def __eq__(self, other):
+		return self.serialize() == other.serialize()
+
+	def __hash__(self):
+		return hash(self.__repr__())

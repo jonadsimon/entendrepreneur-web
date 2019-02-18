@@ -162,7 +162,6 @@ class Portmanteau(Pun):
 				start = time()
 				word1_prob_given_dangling_graphs = cls.get_prob_word_given_subgrapheme(word1_grapheme_nonoverlap, 'head')
 				word2_prob_given_dangling_graphs = cls.get_prob_word_given_subgrapheme(word2_grapheme_nonoverlap, 'tail')
-				print "Subgrapheme proba (2x): {:.2f} seconds".format(time()-start)
 
 				grapheme_portmanteau1 = word1.grapheme + word2_grapheme_nonoverlap
 				grapheme_portmanteau2 = word1_grapheme_nonoverlap + word2.grapheme
@@ -180,7 +179,6 @@ class Portmanteau(Pun):
 				start = time()
 				word1_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word1_phoneme_overlap), 'tail')
 				word2_overlap_phoneme_prob = cls.get_subphoneme_prob(tuple(word2_phoneme_overlap), 'head')
-				print "Subphoneme proba (2x): {:.2f} seconds".format(time()-start)
 				overlap_phoneme_prob = word1_overlap_phoneme_prob * word2_overlap_phoneme_prob
 
 				# Instantiate the constructed portmanteau, and return it
@@ -252,3 +250,9 @@ class Portmanteau(Pun):
 		'''
 		overlap_distance_coef, overlap_phoneme_prob_coef = 0.62, 0.79
 		return overlap_distance_coef * self.overlap_distance + overlap_phoneme_prob_coef * np.log(self.overlap_phoneme_prob)
+
+	def __eq__(self, other):
+		return self.serialize() == other.serialize()
+
+	def __hash__(self):
+		return hash(self.__repr__())
