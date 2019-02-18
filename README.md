@@ -102,6 +102,7 @@ To copy the Postgres database from local hosting to Heroku hosting:
 > PGPASSWORD=punsaregreat pg_dump -Fc --no-acl --no-owner -h localhost -U pun_user entendrepreneur_db > data/db_dumps/entendrepreneur_db_dump_compressed.dump
 ```
 (2) Upload the `entendrepreneur_db_dump_compressed.dump` file to an S3 bucket
+
 (3) Overwrite the current Heroku databse with the content in the S3 file
 ```
 > heroku pg:backups:restore '[S3_URL]' DATABASE_URL --confirm entendrepreneur-app
