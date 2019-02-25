@@ -22,6 +22,16 @@ Entendrepreneur Portmanteau & Rhyme Generator
     </d1>
   </form>
 
+  {% if not results %}
+  <h2>Suggestions</h2>
+  Need some help coming up with interesting inputs? Try one of these:
+  <ul>
+    <li><a href="https://www.punchlinedesign.net/pun_generator/rhino+hospital">rhino + hospital</a></li>
+    <li><a href="https://www.punchlinedesign.net/pun_generator/awful+Mozart">awful + Mozart</a></li>
+    <li><a href="https://www.punchlinedesign.net/pun_generator/NASA+jokester">NASA + jokester</a></li>
+  </ul>
+  {% endif %}
+
   {% if results %}
     <h2>Rhymes</h2>
     {% if results.rhymes %}
