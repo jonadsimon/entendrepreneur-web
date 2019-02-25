@@ -1,5 +1,11 @@
 {% extends "bootstrap/base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
+{% import "bootstrap/google.html" as google %}
+
+{% block scripts %}
+  {{super()}}
+  {{google.uanalytics('U-XXXX-YY')}}
+{% endblock %}
 
 {% block styles %}
 {{ super() }}
