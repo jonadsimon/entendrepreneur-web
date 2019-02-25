@@ -4,7 +4,6 @@ from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
 from portmanteau import Portmanteau
 from rhyme import Rhyme
-from global_constants import MAX_NEIGHBORS
 from app.models import FasttextNeighbor
 
 def alternate_capitalizations(grapheme):

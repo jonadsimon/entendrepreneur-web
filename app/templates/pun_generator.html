@@ -23,44 +23,15 @@ Entendrepreneur Portmanteau & Rhyme Generator
   </form>
 
   {% if not results %}
-  <h2>Suggestions</h2>
-  Need some help coming up with interesting inputs? Try one of these:
-  <ul>
-    <li><a href="https://www.punchlinedesign.net/pun_generator/rhino+hospital">rhino + hospital</a></li>
-    <li><a href="https://www.punchlinedesign.net/pun_generator/awful+Mozart">awful + Mozart</a></li>
-    <li><a href="https://www.punchlinedesign.net/pun_generator/NASA+jokester">NASA + jokester</a></li>
-  </ul>
-  {% endif %}
-
-  {% if results %}
-    <h2>Rhymes</h2>
-    {% if results.rhymes %}
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Rhyme</th>
-            <th scope="col">Phoneme 1</th>
-            <th scope="col">Phoneme 2</th>
-            <th scope="col">Phonetic Probability</th>
-            <th scope="col">Phonetic Distance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for rhyme in results.rhymes %}
-            <tr>
-              <th scope="row">{{ '{} {}'.format(rhyme.grapheme1, rhyme.grapheme2) }}</th>
-              <td>{{ rhyme.phoneme1|safe }}</td> <!-- 'safe' tells Flask not to escape the html -->
-              <td>{{ rhyme.phoneme2|safe }}</td> <!-- 'safe' tells Flask not to escape the html -->
-              <td>{{ rhyme.phonetic_probability }}</td>
-              <td>{{ rhyme.phonetic_distance }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      No rhymes found &#x1F641;
-    {% endif %}
-
+    <h2>Suggestions</h2>
+    Need some help coming up with interesting inputs? Try one of these:
+    <ul>
+      <li><a href="https://www.punchlinedesign.net/pun_generator/rhino+hospital">rhino + hospital</a></li>
+      <li><a href="https://www.punchlinedesign.net/pun_generator/awful+Mozart">awful + Mozart</a></li>
+      <li><a href="https://www.punchlinedesign.net/pun_generator/NASA+jokester">NASA + jokester</a></li>
+    </ul>
+    Note that the inputs are case-sensitive, so for example typing "apple" will primarliy match the fruit, but typing "Apple" will primarily match the company.
+  {% else %}
     <h2>Portmanteaus</h2>
     {% if results.portmanteaus %}
       <table class="table">
@@ -89,6 +60,33 @@ Entendrepreneur Portmanteau & Rhyme Generator
       </table>
     {% else %}
       No portmanteaus found &#x1F641;
+    {% endif %}
+    <h2>Rhymes</h2>
+    {% if results.rhymes %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Rhyme</th>
+            <th scope="col">Phoneme 1</th>
+            <th scope="col">Phoneme 2</th>
+            <th scope="col">Phonetic Probability</th>
+            <th scope="col">Phonetic Distance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rhyme in results.rhymes %}
+            <tr>
+              <th scope="row">{{ '{} {}'.format(rhyme.grapheme1, rhyme.grapheme2) }}</th>
+              <td>{{ rhyme.phoneme1|safe }}</td> <!-- 'safe' tells Flask not to escape the html -->
+              <td>{{ rhyme.phoneme2|safe }}</td> <!-- 'safe' tells Flask not to escape the html -->
+              <td>{{ rhyme.phonetic_probability }}</td>
+              <td>{{ rhyme.phonetic_distance }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      No rhymes found &#x1F641;
     {% endif %}
   {% endif %}
   <h2>About</h2>

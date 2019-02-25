@@ -11,9 +11,8 @@ ARPABET_CONSONANTS = set(['B', 'CH', 'D', 'DH', 'DX', 'EL', 'EM', 'EN', 'F', 'G'
 ARPABET_DIPHTHONGS = set(['AW', 'AY', 'EY', 'OW', 'OY'])
 ARPABET_RHOTICS = set(['ER'])
 
-MAX_PORTMANTEAUS = 200
-MAX_RHYMES = 200
-MAX_NEIGHBORS = 100
+MAX_PORTMANTEAUS = 100
+MAX_RHYMES = 100
 MAX_VOCAB = 300000
 # TEST_INPUT = 'rosemary marriott'
 TEST_INPUT = 'master blaster'
