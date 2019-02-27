@@ -1,10 +1,17 @@
 {% extends "bootstrap/base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-{% import "bootstrap/google.html" as google %}
 
 {% block scripts %}
   {{super()}}
-  {{google.uanalytics('U-XXXX-YY')}}
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-135122216-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-135122216-1');
+  </script>
 {% endblock %}
 
 {% block styles %}
