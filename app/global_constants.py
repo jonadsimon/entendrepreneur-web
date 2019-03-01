@@ -45,3 +45,5 @@ NEAR_MISS_VOWELS = set([('AA','EH'),('AH','UH'),('EH','IH')])
 
 # distance-2 consonants that didn't make the cut: ('S','TH'), ('DH','Z'), ('DH','R')
 NEAR_MISS_CONSONANTS = set([('B','P'),('D','DH'),('D','T'),('DH','TH'),('F','V'), ('SH','ZH'),('CH','JH'),('S','Z')])
+
+GRAPHEME_BLACKLIST = set(['nigger'])

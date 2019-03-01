@@ -5,6 +5,7 @@ from nltk.stem.porter import PorterStemmer
 from portmanteau import Portmanteau
 from rhyme import Rhyme
 from app.models import FasttextNeighbor
+from global_constants import GRAPHEME_BLACKLIST
 
 def alternate_capitalizations(grapheme):
     '''
@@ -100,8 +101,8 @@ def get_portmanteaus(words1_neighbors, words2_neighbors):
     portmanteau_set = set()
     for neighbor1 in words1_neighbors:
         for neighbor2 in words2_neighbors:
-            # If the words are identical, as sometimes happens, skip this word pair
-            if neighbor1.grapheme == neighbor2.grapheme:
+            # If the words are identical, or one of the graphemes is black-listed, skip this word pair
+            if neighbor1.grapheme == neighbor2.grapheme or neighbor1.grapheme.lower() in GRAPHEME_BLACKLIST or neighbor2.grapheme.lower() in GRAPHEME_BLACKLIST:
                 continue
             # Generate forward-ordered portmanteau
             portmanteau, status, message = Portmanteau.get_pun(neighbor1, neighbor2)
@@ -128,8 +129,8 @@ def get_rhymes(words1_neighbors, words2_neighbors):
     rhyme_set = set()
     for neighbor1 in words1_neighbors:
         for neighbor2 in words2_neighbors:
-            # If the words are identical, as sometimes happens, skip this word pair
-            if neighbor1.grapheme == neighbor2.grapheme:
+            # If the words are identical, or one of the graphemes is black-listed, skip this word pair
+            if neighbor1.grapheme == neighbor2.grapheme or neighbor1.grapheme.lower() in GRAPHEME_BLACKLIST or neighbor2.grapheme.lower() in GRAPHEME_BLACKLIST:
                 continue
             # Generate the rhyme for only a single ordering, if the words need to be flipped
             # for quality reasons, that's handled within the 'get_rhyme' function
