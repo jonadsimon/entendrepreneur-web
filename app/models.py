@@ -19,7 +19,7 @@ class Word(db.Model):
         Return the subgrapheme string (return_inds=False), or inclusive subgrapheme indices (return_inds=True),
         corresponding to the subphoneme starting at start_idx and ending at end_idx, inclusive
         '''
-        chunk_lengths = map(len, self.phoneme_chunks)
+        chunk_lengths = list(map(len, self.phoneme_chunks))
         valid_end_inds = np.cumsum(chunk_lengths) - 1
         valid_start_inds = np.cumsum(chunk_lengths) - chunk_lengths
 
@@ -35,7 +35,7 @@ class Word(db.Model):
 
         if not return_inds:
             # Return the subgrapheme corresponding to the providing subphoneme indices
-            subgrapheme = sum(map(list, self.grapheme_chunks[start_chunk_idx:end_chunk_idx+1]), [])
+            subgrapheme = sum(list(map(list, self.grapheme_chunks[start_chunk_idx:end_chunk_idx+1])), [])
             return subgrapheme
         else:
             # Return the subgrapheme *indices* corresponding to the providing subphoneme indices
@@ -47,7 +47,7 @@ class Word(db.Model):
         '''
         Strip the stress information off of the phoneme
         '''
-        return [filter(str.isalpha, str(phone)) for phone in self.phoneme]
+        return [list(filter(str.isalpha, str(phone))) for phone in self.phoneme]
 
 
 class SubgraphemeFrequency(db.Model):

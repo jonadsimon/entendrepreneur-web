@@ -2,10 +2,10 @@ from sqlalchemy import text
 from nltk.corpus import wordnet as wn
 from nltk.stem import WordNetLemmatizer
 from nltk.stem.porter import PorterStemmer
-from portmanteau import Portmanteau
-from rhyme import Rhyme
+from .portmanteau import Portmanteau
+from .rhyme import Rhyme
 from app.models import FasttextNeighbor
-from global_constants import GRAPHEME_BLACKLIST
+from .global_constants import GRAPHEME_BLACKLIST
 
 def alternate_capitalizations(grapheme):
     '''
@@ -86,7 +86,7 @@ def get_semantic_neighbor_graphemes(grapheme):
     # 1) downcase
     # 2) find shortest lemma or valid stem
     # 3) deduplicate
-    semantic_neighbor_graphemes = map(lambda g: get_shortest_lemma(g.lower()), fasttext_neighbor_graphemes_clean)
+    semantic_neighbor_graphemes = [get_shortest_lemma(g.lower()) for g in fasttext_neighbor_graphemes_clean]
     semantic_neighbor_graphemes = set(semantic_neighbor_graphemes)
 
     return semantic_neighbor_graphemes

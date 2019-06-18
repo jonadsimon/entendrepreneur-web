@@ -1,7 +1,7 @@
-from global_constants import *
+from .global_constants import *
 import numpy as np
 from nltk.corpus import wordnet as wn
-from pun import Pun
+from .pun import Pun
 from time import time
 
 class Rhyme(Pun):
@@ -94,8 +94,8 @@ class Rhyme(Pun):
 			overlap_distance = cls.get_phoneme_distance(word1_phoneme_overlap, word2_phoneme_overlap)
 			if overlap_distance <= cls.MAX_OVERLAP_DIST:
 				# It's only possible to match vowels with vowels, and consonants with consonants, so only need to run the check on one of the phonemes
-				num_overlap_vowel_phones1 = sum([1 if filter(str.isalpha, str(phone)) in ARPABET_VOWELS else 0 for phone in word1_phoneme_overlap])
-				num_overlap_consonant_phones1 = sum([1 if filter(str.isalpha, str(phone)) in ARPABET_CONSONANTS else 0 for phone in word1_phoneme_overlap])
+				num_overlap_vowel_phones1 = sum([1 if list(filter(str.isalpha, str(phone))) in ARPABET_VOWELS else 0 for phone in word1_phoneme_overlap])
+				num_overlap_consonant_phones1 = sum([1 if list(filter(str.isalpha, str(phone))) in ARPABET_CONSONANTS else 0 for phone in word1_phoneme_overlap])
 				num_non_overlap_phones1 = len(word1_phoneme_nonoverlap)
 				num_overlap_phones1 = len(word1_phoneme_overlap)
 				num_non_overlap_phones2 = len(word2_phoneme_nonoverlap) # need to save this for later

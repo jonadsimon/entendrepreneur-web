@@ -1,6 +1,6 @@
-from global_constants import *
+from .global_constants import *
 import numpy as np
-from models import SubgraphemeFrequency, SubphonemeFrequency
+from .models import SubgraphemeFrequency, SubphonemeFrequency
 
 class Pun(object):
 	'''
@@ -55,7 +55,7 @@ class Pun(object):
 	    '''
 	    if phone1 == phone2:
 	        return 0
-	    elif filter(str.isalpha, phone1) == filter(str.isalpha, phone2):
+	    elif list(filter(str.isalpha, phone1)) == list(filter(str.isalpha, phone2)):
 	        # small penalty if identical BUT one has a primary stress and the other is nonstressed
 	        if (phone1[-1], phone2[-1]) == ('0','1') or (phone1[-1], phone2[-1]) == ('1','0'):
 	            return 1
@@ -77,7 +77,7 @@ class Pun(object):
 		See here: https://stackoverflow.com/a/38209791/2562771
 		'''
 		if phone[-1].isnumeric():
-			return u'{}{}'.format(phone[:-1], unichr(0x2080 + int(phone[-1])))
+			return '{}{}'.format(phone[:-1], chr(0x2080 + int(phone[-1])))
 		else:
 			return phone
 
