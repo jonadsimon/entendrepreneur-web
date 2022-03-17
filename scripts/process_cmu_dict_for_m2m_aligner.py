@@ -9,7 +9,8 @@
 # >  PATH/TO/M2M_ALIGNER/m2m-aligner --delX --maxX 2 --maxY 2 -i data/m2m_preprocessed_cmudict.txt
 
 
-import nltk.corpus import cmudict
+import nltk.corpus
+import cmudict
 import re
 
 cmu_dict = cmudict.dict()

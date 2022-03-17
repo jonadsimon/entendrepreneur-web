@@ -2,11 +2,12 @@ import gensim
 import numpy as np
 import sys
 sys.path.insert(0, '../app')
-from global_constants import REPO_HOME, MAX_VOCAB
 from sklearn.decomposition import PCA
 from time import time
-import cPickle as pkl
+import pickle as pkl
+from app.global_constants import REPO_HOME, DEBUG
 
+MAX_VOCAB = 300000
 def post_processing_algorithm(X, D=3):
     '''
     X - n_words x n_vector_dims
@@ -42,32 +43,35 @@ def nearest_neighbor(grapheme, fasttext_model, n=200, s=0.35):
     neighbors_with_sims = [(fasttext_model.index2word[idx], sims[idx]) for idx in topn_sim_inds]
     return [neighbor for neighbor, sim in neighbors_with_sims if sim >= s]
 
-# Load the word vectors
-# Only care about the first 300k vectors, ignore the rest for now (for memory issue reasons)
-start = time()
-fasttext_model = gensim.models.KeyedVectors.load_word2vec_format(REPO_HOME+'data/word_vectors/wiki-news-300d-1M.vec', limit=MAX_VOCAB)
-print 'Finished loading fasttext_model into memory: {:.0f} seconds'.format(time()-start)
+def precompute_word_vector_nearest_neighbors():
+  # Load the word vectors
+  # Only care about the first 300k vectors, ignore the rest for now (for memory issue reasons)
+  start = time()
+  fasttext_model = gensim.models.KeyedVectors.load_word2vec_format('data/word_vectors/wiki-news-300d-1M.vec', limit=MAX_VOCAB)
+  print('Finished loading fasttext_model into memory: {:.0f} seconds'.format(time()-start))
 
-start = time()
-# Run the post-processing algorithm to improve the quality of the word-vectors before computing neighbors
-fasttext_model.vectors = post_processing_algorithm(fasttext_model.vectors)
-print 'Finished post-processing word vectors: {:.0f} seconds'.format(time()-start)
+  start = time()
+  # Run the post-processing algorithm to improve the quality of the word-vectors before computing neighbors
+  fasttext_model.vectors = post_processing_algorithm(fasttext_model.vectors)
+  print('Finished post-processing word vectors: {:.0f} seconds'.format(time()-start))
 
-start = time()
-# Normalize the word-vectors to speed up the inner-product computations
-fasttext_model.vectors = fasttext_model.vectors / np.linalg.norm(fasttext_model.vectors, axis=1)[:,np.newaxis]
-print 'Finished normalizing word vectors: {:.0f} seconds'.format(time()-start)
-print 'Sanity-check: {} = (300000, 300)'.format(fasttext_model.vectors.shape)
-print 'Sanity-check: {} = 1.0'.format(fasttext_model.vectors[65465].dot(fasttext_model.vectors[65465]))
+  start = time()
+  # Normalize the word-vectors to speed up the inner-product computations
+  fasttext_model.vectors = fasttext_model.vectors / np.linalg.norm(fasttext_model.vectors, axis=1)[:,np.newaxis]
+  print('Finished normalizing word vectors: {:.0f} seconds'.format(time()-start))
+  print('Sanity-check: {} = (300000, 300)'.format(fasttext_model.vectors.shape))
+  print('Sanity-check: {} = 1.0'.format(fasttext_model.vectors[65465].dot(fasttext_model.vectors[65465])))
 
-# Create a FasttextVector object for each word vector
-start = time()
-grapheme_neighbor_dict = {}
-for grapheme_idx, grapheme in enumerate(fasttext_model.vocab.iterkeys()):
-    neighbors = nearest_neighbor(grapheme, fasttext_model)
-    grapheme_neighbor_dict.update({grapheme: neighbors})
-    if grapheme_idx % 1000 == 0 and grapheme_idx > 0:
-        print 'Finished processing vector {}'.format(grapheme_idx)
-        print 'Looping duration elapsed: {:.0f} seconds'.format(time()-start)
+  # Create a FasttextVector object for each word vector
+  start = time()
+  grapheme_neighbor_dict = {}
+  for grapheme_idx, grapheme in enumerate(fasttext_model.vocab.keys()):
+      neighbors = nearest_neighbor(grapheme, fasttext_model)
+      grapheme_neighbor_dict.update({grapheme: neighbors})
+      if grapheme_idx % 1000 == 0 and grapheme_idx > 0:
+          print('Finished processing vector {}'.format(grapheme_idx))
+          print('Looping duration elapsed: {:.0f} seconds'.format(time()-start))
+          if DEBUG:
+            break
 
-pkl.dump(grapheme_neighbor_dict, open(REPO_HOME+'data/word_vectors/top200_neighbors_sim35_300k.pkl', "wb"))
+  pkl.dump(grapheme_neighbor_dict, open(REPO_HOME + 'data/word_vectors/top200_neighbors_sim35_300k.pkl', "wb"))

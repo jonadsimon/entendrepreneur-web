@@ -12,7 +12,7 @@ def populate_subgrapheme_frequency_table(SubgraphemeFrequency, db):
     subgrapheme_tail_counts = defaultdict(lambda: 1)
     subgrapheme_counts = defaultdict(lambda: 1)
 
-    for grapheme in cmu_dict.iterkeys():
+    for grapheme in cmu_dict.keys():
         # Only store subgraphemes up to a length of 5
         # Anything longer than that is rare enough that the default count of 1 is a good approximation
         for k in range(1,6):
@@ -26,7 +26,7 @@ def populate_subgrapheme_frequency_table(SubgraphemeFrequency, db):
 
     # Now iterate through the subgraphemes, and add them to the SubgraphemeFrequency table
     subgrapheme_frequency_list = []
-    for g in subgrapheme_counts.iterkeys():
+    for g in subgrapheme_counts.keys():
         new_subgrapheme_frequency = SubgraphemeFrequency(grapheme=g,
                                                         frequency=subgrapheme_counts[g],
                                                         frequency_head=subgrapheme_head_counts[g],

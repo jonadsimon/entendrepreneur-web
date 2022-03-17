@@ -12,7 +12,7 @@ def populate_subphoneme_frequency_table(SubphonemeFrequency, db):
     subphoneme_tail_counts = defaultdict(lambda: 1)
     subphoneme_counts = defaultdict(lambda: 1)
 
-    for phonemes in cmu_dict.itervalues():
+    for phonemes in cmu_dict.values():
         # Only store subphonemes up to a length of 5
         # Anything longer than that is rare enough that the default count of 1 is a good approximation
         phoneme = tuple(phonemes[0])
@@ -27,7 +27,7 @@ def populate_subphoneme_frequency_table(SubphonemeFrequency, db):
 
     # Now iterate through the subphonemes, and add them to the SubphonemeFrequency table
     subphoneme_frequency_list = []
-    for p in subphoneme_counts.iterkeys():
+    for p in subphoneme_counts.keys():
         new_subphoneme_frequency = SubphonemeFrequency(phoneme=p,
                                                         frequency=subphoneme_counts[p],
                                                         frequency_head=subphoneme_head_counts[p],

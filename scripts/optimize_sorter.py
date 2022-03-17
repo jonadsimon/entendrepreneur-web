@@ -32,7 +32,7 @@ def get_weight(i, j, df=df):
     return np.abs(d[df.label[i]] - d[df.label[j]])
 
 # form all pairwise combinations
-comb = combinations(range(df.shape[0]), 2)
+comb = combinations(list(range(df.shape[0])), 2)
 k = 0
 Xp, yp, diff, weight = [], [], [], []
 for (i, j) in comb:
@@ -48,7 +48,7 @@ for (i, j) in comb:
         Xp[-1] *= -1
         diff[-1] *= -1
     k += 1
-Xp, yp, diff, weight = map(np.asanyarray, (Xp, yp, diff, weight))
+Xp, yp, diff, weight = list(map(np.asanyarray, (Xp, yp, diff, weight)))
 
 # Visualize reframed problem:
 # plt.scatter(Xp[:, 0], Xp[:, 1], c=diff, s=60, marker='o', cmap=plt.cm.Blues)
@@ -59,16 +59,16 @@ clf = svm.SVC(kernel='linear', C=.1) # no grid search for now
 clf.fit(Xp, yp)
 # Compute L2-normalized coef's, and output them
 coef = clf.coef_.ravel() / np.linalg.norm(clf.coef_)
-print coef
+print(coef)
 
 # Compare rank-order correlation from before (~0.2) vs after (~0.7)
 df['phonetic_prob_log']= np.log(df.phonetic_prob)
 d = {'g': 0, 'm': 1, 'b': 2}
 df['label_num'] = df.label.map(lambda x: d[x])
 tau, _ = stats.kendalltau(np.dot(df[['phonetic_dist','phonetic_prob_log']], coef), df['label_num'])
-print tau
+print(tau)
 tau, _ = stats.kendalltau(df.phonetic_dist + df.phonetic_prob, df['label_num']) # equivalent to lexical ordering b/c of differing order-of-magnitude
-print tau
+print(tau)
 
 # Looking at the Portmanteau data, impose cutoff of -7, anything greater than that is junk
 

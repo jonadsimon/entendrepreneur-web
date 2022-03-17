@@ -12,25 +12,25 @@ def get_puns_from_words(word1, word2):
     start = time()
     nearest_graphemes1 = get_semantic_neighbor_graphemes(word1)
     nearest_graphemes2 = get_semantic_neighbor_graphemes(word2)
-    print "Semantic neighbors: {:.2f} seconds".format(time()-start)
+    print("Semantic neighbors: {:.2f} seconds".format(time()-start))
 
     # Find the Word objects corresponding to each of the semantic neighbors
     start = time()
     nearest_words1 = Word.query.filter(Word.grapheme.in_(nearest_graphemes1)).all()
     nearest_words2 = Word.query.filter(Word.grapheme.in_(nearest_graphemes2)).all()
-    print "Word conversion: {:.2f} seconds".format(time()-start)
+    print("Word conversion: {:.2f} seconds".format(time()-start))
 
     # Generate the ordered portmanteaus
     start = time()
     portmanteaus = get_portmanteaus(nearest_words1, nearest_words2)
-    print "Portmanteaus: {:.2f} seconds".format(time()-start)
+    print("Portmanteaus: {:.2f} seconds".format(time()-start))
 
     # Generate the ordered rhymes
     start = time()
     rhymes = get_rhymes(nearest_words1, nearest_words2)
-    print "Rhymes: {:.2f} seconds".format(time()-start)
+    print("Rhymes: {:.2f} seconds".format(time()-start))
 
-    return {'portmanteaus': map(lambda x: x.serialize(), portmanteaus[:MAX_PORTMANTEAUS]), 'rhymes': map(lambda x: x.serialize(), rhymes[:MAX_RHYMES])}
+    return {'portmanteaus': [x.serialize() for x in portmanteaus[:MAX_PORTMANTEAUS]], 'rhymes': [x.serialize() for x in rhymes[:MAX_RHYMES]]}
 
 def log_user_inputs(grapheme1, grapheme2, is_valid):
     '''

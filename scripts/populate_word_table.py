@@ -47,17 +47,17 @@ def grapheme_chunks_to_grapheme_string(grapheme_chunks):
     Convert from a tuple-based grapheme represention to a string-based grapheme represention
     e.g. [('i',),('m',),('p',),('e',),('l','l',),('e',),('d',)] --> 'impelled'
     '''
-    return ''.join(sum(map(list, grapheme_chunks), []))
+    return ''.join(sum(list(map(list, grapheme_chunks)), []))
 
 def phoneme_chunks_to_stressed_phoneme_chunks(phoneme_chunks, grapheme):
     '''
     Convert from stressless phonememe represention to a stressed phoneme represention
     e.g. [('IH',),('M',),('P',),('EH',),('L',),('_',),('D',)] --> [('IH0',),('M',),('P',),('EH1',),('L',),('_',),('D',)]
     '''
-    chunk_lengths = map(len, phoneme_chunks)
+    chunk_lengths = list(map(len, phoneme_chunks))
     valid_end_inds = np.cumsum(chunk_lengths)
     valid_start_inds = np.cumsum(chunk_lengths) - chunk_lengths
-    idx_pairs = zip(valid_start_inds,valid_end_inds)
+    idx_pairs = list(zip(valid_start_inds,valid_end_inds))
 
     stressed_phoneme = cmu_dict[grapheme][0]
     stressed_phoneme_chunks = [tuple(stressed_phoneme[start_idx:end_idx]) for (start_idx,end_idx) in idx_pairs]
